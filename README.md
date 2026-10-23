@@ -17,7 +17,7 @@
 - 探索旋钮、RGB 灯和桌面配置体验。
 - 随开发进度公开硬件设计、物料清单、固件及组装说明。
 
-麦克风是否集成到键盘、语音识别方案及支持的操作系统仍待选型；路线图中的功能均为计划。
+协议路线优先使用电脑麦克风，复用官方桌面应用的听写能力；键盘集成麦克风、其他识别方案及支持的操作系统仍待选型。路线图中的功能均为计划。
 
 ## 键盘候选方案
 
@@ -25,10 +25,13 @@
 
 | 方案 | 设计方向 | 当前状态 |
 | --- | --- | --- |
-| [void9 + Pro Micro（ATmega32U4）](docs/hardware/void9-pro-micro.md) | 复用已有 3×3 九键键盘，先由电脑端完成语音采集、识别和文字输入 | 已整理方案与交互图，尚未端到端验证 |
-| ESP32 等其他主控 | 探索其他键盘实现及音频、连接方式 | 候选方向；具体芯片、开发板和固件待调研 |
+| [void9 + Pro Micro（ATmega32U4）](docs/hardware/void9-pro-micro.md#3-pro-microusb-厂商-hid-协议移植) | 参考同主控 LUFA 固件，移植 USB 厂商 HID 兼容协议 | 已有开源参考；本项目未移植或实测 |
+| [ESP32 / BLE 候选路线](docs/hardware/void9-pro-micro.md#4-esp32ble-厂商-hid-协议路线) | 参考 Core2 固件，将 BLE 协议与物理九键适配 | 具体开发板待选；不能推广到整个 ESP32 系列 |
+| [快捷键降级](docs/hardware/void9-pro-micro.md#5-快捷键降级只承诺实际可映射的能力) | 协议兼容失败时，逐项核对目标系统的快捷键 | Fast、Fork、Mic 等不承诺与原版等价 |
 
 各方案独立评估。采用 void9 方案不意味着后续键盘都必须使用 Pro Micro 或 QMK。
+
+九键目标布局为 **Agent 1 / Agent 2 / Agent 3；Fast / Approve / Decline；Fork / Mic / Send**：保留原版六种默认命令动作，仅缩减 Agent 槽位数量。能力边界与配图见[完整方案](docs/hardware/void9-pro-micro.md)。
 
 ## 产品调研
 
