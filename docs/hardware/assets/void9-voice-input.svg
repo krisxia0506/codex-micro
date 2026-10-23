@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="900" viewBox="0 0 1360 900" style="max-width:100%;height:auto" role="img" aria-labelledby="title desc">
+  <title id="title">void9 + Pro Micro：一种九键语音输入方案</title>
+  <desc id="desc">左侧为示意九键布局，通过 USB 向电脑发送操作。右侧电脑程序处理按下与释放，用电脑麦克风录音并识别，再预览文字，由用户编辑、取消或确认发送。底部说明 ESP32 等其他主控可另行探索。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#5a7190"/></marker>
+    <style>text{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;fill:#172d46}.head{font-size:25px;font-weight:650}.body{font-size:20px}.note{font-size:17px;fill:#526a83}.key{font-size:19px;text-anchor:middle;dominant-baseline:middle}</style>
+  </defs>
+  <rect width="1360" height="900" rx="24" fill="#f3f6fb"/>
+  <text x="48" y="57" font-size="32" font-weight="700">void9 + Pro Micro：一种九键语音输入方案</text>
+  <text x="48" y="99" class="body">候选方案 · 优先复用现有键盘 · 本图为设计示意，尚未实现或实测</text>
+  <rect x="48" y="140" width="420" height="500" rx="20" fill="#fff" stroke="#c6d3e2" stroke-width="2"/>
+  <text x="78" y="184" class="head">键盘端：void9 / 3×3</text>
+  <text x="78" y="213" class="note">Pro Micro · ATmega32U4</text>
+  <g fill="#edf2f8" stroke="#c8d5e4" stroke-width="2">
+    <rect x="82" y="242" width="100" height="80" rx="12"/><rect x="202" y="242" width="100" height="80" rx="12"/><rect x="322" y="242" width="100" height="80" rx="12"/>
+    <rect x="82" y="342" width="100" height="80" rx="12"/><rect x="202" y="342" width="100" height="80" rx="12" fill="#d7e9ff" stroke="#78a9e1"/><rect x="322" y="342" width="100" height="80" rx="12"/>
+    <rect x="82" y="442" width="100" height="80" rx="12"/><rect x="202" y="442" width="100" height="80" rx="12"/><rect x="322" y="442" width="100" height="80" rx="12"/>
+  </g>
+  <g class="key"><text x="132" y="282">任务 1</text><text x="252" y="282">任务 2</text><text x="372" y="282">任务 3</text><text x="132" y="382">上一个</text><text x="252" y="382" font-weight="700">按住说话</text><text x="372" y="382">下一个</text><text x="132" y="482">取消</text><text x="252" y="482">功能层</text><text x="372" y="482">发送</text></g>
+  <text x="78" y="564" class="note">布局仅示意，任务键需配套软件映射。</text>
+  <text x="78" y="598" class="note">首版 USB 传控制事件，不传麦克风音频。</text>
+  <rect x="564" y="140" width="748" height="500" rx="20" fill="#fff" stroke="#c6d3e2" stroke-width="2"/>
+  <path d="M477 264H585" stroke="#5a7190" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="495" y="239" class="note">USB</text>
+  <text x="598" y="184" class="head">电脑端：录音、识别与文字输入</text>
+  <rect x="600" y="222" width="676" height="84" rx="12" fill="#e7f0ff"/>
+  <text x="624" y="255" class="body" font-weight="650">① 处理语音键按下 / 释放</text>
+  <text x="624" y="284" class="note">建议：按下开始录音，松开结束；需要验证触发工具或程序。</text>
+  <path d="M938 315V338" stroke="#5a7190" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="600" y="350" width="676" height="84" rx="12" fill="#e8f5ef"/>
+  <text x="624" y="383" class="body" font-weight="650">② 电脑麦克风采集 → 语音识别</text>
+  <text x="624" y="412" class="note">麦克风属于电脑；本地或云端识别方案待选型。</text>
+  <path d="M938 444V466" stroke="#5a7190" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="600" y="478" width="676" height="100" rx="12" fill="#fff3dc"/>
+  <text x="624" y="514" class="body" font-weight="650">③ 预览文字 → 编辑 / 取消 → 确认输入或发送</text>
+  <text x="624" y="546" class="note">停止录音与提交文字分开；目标应用的输入方式待验证。</text>
+  <text x="598" y="613" class="note">尚未实现：固件适配、桌面程序、识别与目标应用的端到端链路。</text>
+  <rect x="48" y="684" width="1264" height="150" rx="20" fill="#fff" stroke="#9aacbf" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="78" y="726" class="head">其他键盘方案仍可并列选择</text>
+  <text x="78" y="766" class="body">ESP32 等主控：具体芯片、开发板、连接方式、固件与音频方案需独立调研。</text>
+  <text x="78" y="800" class="note">可共享录音起止、预览、取消、确认发送的交互语义；不要求所有方案采用 Pro Micro / QMK。</text>
+  <text x="48" y="872" class="note">原创方案图 · 2026-10-23 · 技术依据与验证边界见 void9-pro-micro.md</text>
+</svg>
