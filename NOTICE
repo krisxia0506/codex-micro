@@ -1,0 +1,18 @@
+# Third-party notices
+
+The MIT License in LICENSE applies to original project contributions.
+
+The following reference images were obtained from the Work Louder Codex Micro
+product page (https://worklouder.cc/codex-micro):
+
+- docs/research/assets/codex-micro-product.png
+- docs/research/assets/codex-micro-command-keys.png
+
+These images remain the property of their respective rights holders and are
+excluded from the project's MIT License. They are included as attributed product
+research references. No additional redistribution or commercial-use permission
+has been obtained. See docs/research/assets/README.md for source URLs.
+
+OpenAI, Work Louder and Codex Micro names and marks belong to their respective
+owners. Their appearance in this repository does not imply endorsement,
+affiliation or a trademark license.
