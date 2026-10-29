@@ -72,7 +72,7 @@ python3 scripts/check_repository.py
 git diff --check
 ```
 
-CI 在 Pull Request 和 `main` 更新时检查已跟踪 Markdown 的内联链接目标文件、素材 SHA-256 清单和补丁空白错误。不请求外部网站，不检查标题锚点、引用式链接或 HTML 链接。当前不包含硬件、固件或桌面程序的构建与功能验证。
+CI 在 Pull Request 和 `main` 更新时检查已跟踪 Markdown 的内联链接目标文件、素材 SHA-256 清单和补丁空白错误。不请求外部网站，不检查标题锚点、引用式链接或 HTML 链接。CI 也执行网页构建和 STL 几何测试；不包含硬件、固件或桌面程序的功能验证。
 
 GitHub Actions 依赖固定到提交 SHA，由 Dependabot 每周检查更新。仓库维护设置见[维护说明](docs/maintaining.md)。
 

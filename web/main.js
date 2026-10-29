@@ -8,11 +8,11 @@ const scene=new THREE.Scene(); scene.background=new THREE.Color('#edece8');
 const camera=new THREE.PerspectiveCamera(36,1,0.1,2000); camera.up.set(0,0,1);
 let renderer;
 try { renderer=new THREE.WebGLRenderer({antialias:true}); } catch { host.textContent='无法启动 WebGL，请启用浏览器硬件加速后刷新。'; throw new Error('WebGL unavailable'); }
-renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; host.appendChild(renderer.domElement);
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1; renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; host.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.minDistance=100; controls.maxDistance=700;
 function reset(){camera.position.set(210,-260,260); controls.target.set(0,0,30); controls.update();} reset();
-scene.add(new THREE.HemisphereLight(0xffffff,0x777482,3));
-const light=new THREE.DirectionalLight(0xffffff,4); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
+scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
+const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1; floor.receiveShadow=true; scene.add(floor);
 const parts=createParts(); const meshes=[]; let selected=parts[0];
 $('#count').textContent=String(parts.length).padStart(2,'0');
