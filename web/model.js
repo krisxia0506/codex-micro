@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { buildAssembly, assemblySpec } from './assembly.js';
-export { assemblySpec };
+import { buildAssembly, assemblySpec, hollowKeycap, keycapSpec } from './assembly.js';
+export { assemblySpec, keycapSpec };
 export let assemblyValidation;
 let fitCoupon;
 export function socketFitCoupon(){if(!fitCoupon)createParts();return fitCoupon.clone();}
@@ -65,7 +65,14 @@ export function createParts() {
   add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；13 个一体承托槽、弹性限位舌与防脱肩；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 高中框；四角贯穿螺丝支柱，上下端接纳定位凸沿，单侧 0.30 mm 配合间隙。凸沿负责定位，M3 螺丝负责锁紧。');
   add('top','轴体定位板 · 下凸沿',assembly.top,[0,0,10],'#c5cdd0',2.5,'1.5 mm 轴体板，四角向下局部加厚至 2.5 mm；下侧一圈 1.6 mm 凸沿；四角直径 3.4 mm 通孔。14.2 mm 轴孔为打印试配值，卡爪配合仍待试装。');
-  keys.forEach((k,i)=>add(`key-${i+1}`,k.name,keycap(k.w,k.d,7),[k.x,k.y,18],k.color,4,'实心外观占位件，无轴体十字柱，不能作为功能键帽。'));
+  keys.forEach((k,i)=>{
+    const mounts=k.name==='语音键'?[-10,10]:[0];
+    const exterior=keycap(k.w,k.d,keycapSpec.height);
+    const fitted=hollowKeycap(exterior,k.w,k.d,mounts);exterior.dispose();
+    add(`key-${i+1}`,k.name,fitted.geometry,[k.x,k.y,keycapSpec.assembledZ],k.color,4,
+      `中空键帽，底部空腔深 4.7 mm；${mounts.length} 个 MX 十字盲孔（跨度 4.30、臂宽 1.30、深 4.20 mm），孔口倒角、外侧承力柱。打印试配尺寸，松紧和全行程需实测。`);
+    Object.assign(parts.at(-1),{mountXs:mounts,keycapValidation:fitted.validation});
+  });
   const knob=new THREE.CylinderGeometry(9,9,12,48); knob.rotateX(Math.PI/2); knob.translate(0,0,6);
   add('knob','旋钮',knob,[-30,30,18],'#bac3c7',4,'直径 18 mm；实心占位件，未设计编码器轴孔。');
   const stick=new THREE.CylinderGeometry(8,6,9,40); stick.rotateX(Math.PI/2); stick.translate(0,0,4.5);

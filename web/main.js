@@ -18,7 +18,7 @@ function reset(){camera.position.set(120,-160,180); controls.target.set(0,0,30);
 scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1.1; floor.receiveShadow=true; scene.add(floor);
-const parts=createParts(); const meshes=[]; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
+const parts=createParts(); const meshes=[]; let keyInspection=null; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
 const taskKeys=parts.filter(part=>/^key-[1-6]$/.test(part.id));
 const taskGroup=document.createElement('div'); taskGroup.className='task-group';
 taskGroup.innerHTML='<div class="part-row task-group-header"><input type="checkbox" checked aria-label="显示任务键组"><button aria-expanded="false" aria-controls="task-key-children"><span class="group-arrow">▸</span>任务键组<small>6 个</small></button></div><div id="task-key-children" class="task-group-children" hidden></div>';
@@ -48,23 +48,41 @@ for(const part of parts){
  row.querySelector('button').onclick=()=>select(part); part.row=row;
  if(taskKeys.includes(part)){if(!taskGroup.isConnected)$('#parts').appendChild(taskGroup);groupChildren.appendChild(row);}else $('#parts').appendChild(row);
 }
-function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':(part.id.startsWith('case-')?'标准紧固件 · 不提供打印文件':'电子元件占位 · 不提供打印文件'); for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
-$('#explode').oninput=e=>{const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
-$('#assembly').onclick=()=>{
+function leaveKeyInspection(){
+ if(!keyInspection)return;
+ for(const mesh of meshes){mesh.visible=keyInspection.get(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
+ keyInspection=null;floor.visible=true;controls.minDistance=100;$('#key-bottom').textContent='查看键帽底部';syncTaskGroup();reset();
+}
+function aimKeyBottom(part){
+ const mesh=meshes.find(m=>m.userData.part===part),p=mesh.position;
+ for(const m of meshes){m.visible=m===mesh;m.userData.part.row.querySelector('input').checked=m.visible;}
+ floor.visible=false;controls.minDistance=15;controls.target.copy(p).add(new THREE.Vector3(0,0,3));
+ mesh.geometry.computeBoundingBox();const size=mesh.geometry.boundingBox.getSize(new THREE.Vector3());
+ camera.position.copy(p).add(new THREE.Vector3(12,-20,-36).multiplyScalar(Math.max(1,size.x/20)));controls.update();
+}
+$('#key-bottom').onclick=()=>{
+ if(keyInspection){leaveKeyInspection();reset();return;}
+ keyInspection=new Map(meshes.map(m=>[m.userData.part.id,m.visible]));
+ $('#key-bottom').textContent='返回装配视图';
+ select(selected.id.startsWith('key-')?selected:taskKeys[0]);
+};
+function select(part){ if(keyInspection){if(part.id.startsWith('key-'))aimKeyBottom(part);else leaveKeyInspection();} selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':(part.id.startsWith('case-')?'标准紧固件 · 不提供打印文件':'电子元件占位 · 不提供打印文件'); for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
+$('#explode').oninput=e=>{leaveKeyInspection();const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
+$('#assembly').onclick=()=>{leaveKeyInspection();
  electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
  const ids=['bottom','wall','top','sockets','case-screws','case-nuts'];
  for(const mesh of meshes){mesh.visible=ids.includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
  $('#explode').value='80';$('#explode').dispatchEvent(new Event('input'));camera.position.set(155,-210,150);controls.target.set(0,0,45);controls.update();select(parts.find(p=>p.id==='bottom'));
 };
-$('#mounts').onclick=()=>{
+$('#mounts').onclick=()=>{leaveKeyInspection();
  electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
  for(const mesh of meshes){mesh.visible=['bottom','sockets'].includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
  $('#explode').value='20';$('#explode').dispatchEvent(new Event('input'));camera.position.set(100,-150,180);controls.target.set(0,0,15);controls.update();select(parts.find(p=>p.id==='bottom'));
 };
-$('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
+$('#reset').onclick=()=>{leaveKeyInspection();reset();}; $('#top').onclick=()=>{leaveKeyInspection();camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
-$('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
-$('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||(!m.userData.part.printable||m.userData.part.electronicLayer===true);m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='xiao'));syncTaskGroup();};
+$('#show-all').onclick=()=>{leaveKeyInspection();electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
+$('#electronics').onchange=e=>{leaveKeyInspection();electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||(!m.userData.part.printable||m.userData.part.electronicLayer===true);m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='xiao'));syncTaskGroup();};
 $('#labels').onchange=()=>{};
 
 const harness=new THREE.Group();scene.add(harness);

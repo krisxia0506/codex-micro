@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { keycapSpec } from './assembly.js';
 
 // Render-only details: markings and commercial component features are not STL parts.
 export function decorate(mesh, part) {
@@ -25,7 +26,7 @@ export function decorate(mesh, part) {
   if(part.id.startsWith('key-')) {
     const i=Number(part.id.slice(4));
     if(i<=6){
-      cylinder(3.3,.15,'#87919d',0,0,6.05);
+      cylinder(3.3,.15,'#87919d',0,0,7.55);
     } else {
       const canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;
       const c=canvas.getContext('2d');c.strokeStyle='#15191b';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
@@ -38,7 +39,7 @@ export function decorate(mesh, part) {
       if(i===11){c.beginPath();c.roundRect(102,43,52,108,26);c.stroke();c.beginPath();c.arc(128,125,51,0,Math.PI);c.stroke();path([[128,178],[128,210]]);path([[102,210],[154,210]]);}
       if(i===12){c.beginPath();c.moveTo(72,192);c.bezierCurveTo(20,163,44,121,61,110);c.bezierCurveTo(45,63,105,33,136,63);c.bezierCurveTo(190,40,218,93,196,122);c.bezierCurveTo(234,168,184,211,149,192);c.closePath();c.stroke();path([[92,108],[112,128],[92,148]]);path([[139,150],[164,150]]);}
       const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-      const icon=new THREE.Mesh(new THREE.PlaneGeometry(7,7),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));icon.position.z=5.4;mesh.add(icon);
+      const icon=new THREE.Mesh(new THREE.PlaneGeometry(7,7),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));icon.position.z=6.9;mesh.add(icon);
     }
   }
   if(part.id==='knob') {
@@ -51,8 +52,8 @@ export function decorate(mesh, part) {
     for(let i=0;i<4;i++){const angle=Math.PI/4+i*Math.PI/2;const mark=box(3,.6,.15,'#101314',Math.cos(angle)*4.7,Math.sin(angle)*4.7,9.4);mark.rotation.z=angle;}
   }
   if(part.id.startsWith('switch-')) {
-    box(4,1.3,3,'#caa6db',0,0,8);
-    box(1.3,4,3,'#caa6db',0,0,8);
+    box(keycapSpec.stemSpan,keycapSpec.stemBar,3.7,'#caa6db',0,0,8.85);
+    box(keycapSpec.stemBar,keycapSpec.stemSpan,3.7,'#caa6db',0,0,8.85);
     for(const x of [-5,5])box(.7,1,2,'#caa35f',x,0,-.5,.8);
   }
   if(part.id==='encoder') {

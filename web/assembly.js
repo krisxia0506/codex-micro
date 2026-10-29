@@ -88,3 +88,36 @@ export function buildAssembly(locations){
   return result;
  }finally{for(const o of owned.reverse())o.delete();}
 }
+
+// Printable trial fit, deliberately separate from nominal switch dimensions.
+export const keycapSpec={height:8.5,cavityDepth:4.7,wallInset:1.7,
+ mountSpan:4.3,mountBar:1.3,mountDepth:4.2,hubRadius:2.9,leadInDepth:.35,
+ assembledZ:16,stemTop:19.2,stemSpan:4.0,stemBar:1.2,travel:4};
+export function hollowKeycap(exterior,width,depth,mountXs){
+ const owned=[];const keep=o=>(owned.push(o),o);const {Manifold:M,CrossSection:C}=kernel;const s=keycapSpec;
+ const move=(g,x,y,z)=>keep(g.translate([x,y,z]));
+ const box=(w,d,h,x=0,y=0,z=0)=>move(keep(M.cube([w,d,h])),x-w/2,y-d/2,z);
+ const union=a=>keep(M.union(a));const cut=(a,b)=>keep(a.subtract(b));
+ try{
+  const input=new kernel.Mesh({numProp:3,vertProperties:exterior.attributes.position.array,triVerts:new Uint32Array(exterior.index.array)});input.merge();
+  const outside=keep(new M(input));
+  const inner=keep(keep(C.square([width-2*s.wallInset-4,depth-2*s.wallInset-4],true)).offset(2,'Round',2,32));
+  const cavity=move(keep(inner.extrude(s.cavityDepth+.1)),0,0,-.1);
+  const hubs=mountXs.map(x=>move(keep(M.cylinder(s.cavityDepth+.2,s.hubRadius,s.hubRadius,48)),x,0,0));
+  const holes=[];
+  for(const x of mountXs){
+   holes.push(box(s.mountSpan,s.mountBar,s.mountDepth+.1,x,0,-.1),box(s.mountBar,s.mountSpan,s.mountDepth+.1,x,0,-.1));
+   for(const [w,d] of [[s.mountSpan,s.mountBar],[s.mountBar,s.mountSpan]]){
+    const mouth=keep(C.square([w+.3,d+.3],true));
+    holes.push(move(keep(mouth.extrude(s.leadInDepth+.05,0,0,[w/(w+.3),d/(d+.3)])),x,0,-.05));
+   }
+  }
+  const solid=cut(union([cut(outside,cavity),...hubs]),union(holes));
+  const m=solid.getMesh();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(m.vertProperties,3));g.setIndex(new THREE.BufferAttribute(m.triVerts,1));const geometry=g.toNonIndexed();g.dispose();geometry.computeVertexNormals();
+  const stems=union(mountXs.flatMap(x=>[box(s.stemSpan,s.stemBar,3.7,x,0,-.5),box(s.stemBar,s.stemSpan,3.7,x,0,-.5)]));
+  const overlap=keep(solid.intersect(stems));
+  const components=solid.decompose().map(keep).length;
+  return {geometry,validation:{components,stemOverlap:overlap.volume(),engagement:s.stemTop-s.assembledZ,
+   roofThickness:s.height-2.1-s.cavityDepth,mounts:mountXs.length}};
+ }finally{for(const o of owned.reverse())o.delete();}
+}

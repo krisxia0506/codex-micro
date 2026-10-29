@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createParts, printableGeometry, assemblyValidation, assemblySpec, socketFitCoupon } from '../../web/model.js';
-import { Mesh, Vector3 } from 'three';
+import { Mesh, Vector3, Raycaster, MeshBasicMaterial, DoubleSide } from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const parts=createParts();
@@ -46,7 +46,7 @@ test('floating keys remain above the low switch plate and enclosure rim',()=>{
  const plateTop=plate.position[2]+plate.geometry.boundingBox.max.z;
  assert.ok(wall.position[2]+wall.geometry.boundingBox.max.z<=plateTop);
  for(const key of parts.filter(p=>p.id.startsWith('key-'))){
-  key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=5.5);
+  key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=4.5);
  }
 });
 
@@ -111,4 +111,27 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
    const overlap=keep(wire.intersect(shell));assert.ok(Math.abs(overlap.volume())<1e-6,`socket ${index+1}, side ${side}`);g.dispose();
   }
  }finally{for(const o of owned.reverse())o.delete();}
+});
+
+test('all keycaps have connected hollow shells and aligned MX mounts',()=>{
+ for(const p of parts.filter(p=>p.id.startsWith('key-'))){
+  const v=p.keycapValidation;assert.equal(v.components,1);assert.ok(Math.abs(v.stemOverlap)<1e-6);
+  assert.ok(v.engagement>=3);assert.ok(v.roofThickness>=1.5);
+  assert.equal(v.mounts,p.id==='key-11'?2:1);
+ }
+ assert.deepEqual(parts.find(p=>p.id==='key-11').mountXs,[-10,10]);
+});
+
+test('MX holes open from underneath and stop below the keycap roof',()=>{
+ const material=new MeshBasicMaterial({side:DoubleSide});
+ for(const p of parts.filter(p=>p.id.startsWith('key-'))){
+  const mesh=new Mesh(p.geometry,material);
+  const underside=(x,y)=>new Raycaster(new Vector3(x,y,-1),new Vector3(0,0,1)).intersectObject(mesh)[0]?.point.z;
+  for(const x of p.mountXs){
+   for(const [dx,dy] of [[0,0],[1.8,0],[0,1.8]])assert.ok(Math.abs(underside(x+dx,dy)-4.2)<1e-4,`${p.id} blind cross hole`);
+   assert.ok(Math.abs(underside(x+1.3,1.3))<1e-4,`${p.id} material between cross arms`);
+   assert.ok(Math.abs(underside(x+5,0)-4.7)<1e-4,`${p.id} underside cavity`);
+  }
+ }
+ material.dispose();
 });
