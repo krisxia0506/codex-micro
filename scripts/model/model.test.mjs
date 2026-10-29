@@ -7,7 +7,7 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const parts=createParts();
 test('assembly IDs are unique',()=>assert.equal(new Set(parts.map(p=>p.id)).size,parts.length));
 test('electronic placeholders cannot be exported',()=>{
- assert.equal(parts.filter(p=>p.printable).length,16);
+ assert.equal(parts.filter(p=>p.printable).length,18);
  for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
 });
 for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
@@ -29,5 +29,14 @@ for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, po
 test('handwired architecture uses a module instead of a full PCB',()=>{
  assert.ok(parts.some(p=>p.id==='xiao'));
  assert.ok(!parts.some(p=>['pcb','mcu','power','usb'].includes(p.id)));
- assert.equal(parts.find(p=>p.id==='sockets').socketPositions.length,10);
+ assert.equal(parts.find(p=>p.id==='sockets').socketPositions.length,13);
+});
+test('reference layout has 2+4 task keys and a two-switch voice key',()=>{
+ const tasks=parts.filter(p=>/^key-[1-6]$/.test(p.id));
+ const rows=new Map();for(const p of tasks)rows.set(p.position[1],(rows.get(p.position[1])||0)+1);
+ assert.deepEqual([...rows.values()],[2,4]);
+ assert.equal(parts.filter(p=>p.id.startsWith('key-')).length,12);
+ const voice=parts.find(p=>p.name==='语音键');voice.geometry.computeBoundingBox();
+ const underVoice=parts.filter(p=>p.id.startsWith('switch-')&&p.position[1]===voice.position[1]&&Math.abs(p.position[0]-voice.position[0])<voice.geometry.boundingBox.max.x);
+ assert.equal(underVoice.length,2);
 });

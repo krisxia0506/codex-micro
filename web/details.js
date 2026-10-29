@@ -24,25 +24,31 @@ export function decorate(mesh, part) {
   };
   if(part.id.startsWith('key-')) {
     const i=Number(part.id.slice(4));
-    text(i<=6?`0${i}`:['✓','×','↗','VOICE'][i-7],i===10?23:12,4,0,0,7.03);
-    // Small light window on the face of each task key.
-    if(i<=6)box(5,.5,.5,'#f6ffff',0,-8,4);
+    if(i<=6){
+      cylinder(3.3,.15,'#87919d',0,0,6.05);
+    } else {
+      const canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;
+      const c=canvas.getContext('2d');c.strokeStyle='#15191b';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
+      const path=points=>{c.beginPath();points.forEach(([x,y],j)=>j?c.lineTo(x,y):c.moveTo(x,y));c.stroke();};
+      const circle=(x,y,r)=>{c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke();};
+      if(i===7)path([[141,43],[65,143],[120,143],[111,207],[191,104],[137,104],[141,43]]);
+      if(i===8){circle(128,128,75);path([[94,129],[119,153],[165,98]]);}
+      if(i===9){circle(128,128,75);path([[103,103],[153,153]]);path([[153,103],[103,153]]);}
+      if(i===10){path([[52,128],[111,128],[190,56]]);path([[143,56],[190,56],[190,103]]);path([[130,149],[190,203],[190,155]]);path([[146,203],[190,203]]);}
+      if(i===11){c.beginPath();c.roundRect(102,43,52,108,26);c.stroke();c.beginPath();c.arc(128,125,51,0,Math.PI);c.stroke();path([[128,178],[128,210]]);path([[102,210],[154,210]]);}
+      if(i===12){c.beginPath();c.moveTo(72,192);c.bezierCurveTo(20,163,44,121,61,110);c.bezierCurveTo(45,63,105,33,136,63);c.bezierCurveTo(190,40,218,93,196,122);c.bezierCurveTo(234,168,184,211,149,192);c.closePath();c.stroke();path([[92,108],[112,128],[92,148]]);path([[139,150],[164,150]]);}
+      const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+      const icon=new THREE.Mesh(new THREE.PlaneGeometry(7,7),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));icon.position.z=5.4;mesh.add(icon);
+    }
   }
   if(part.id==='knob') {
-    for(let i=0;i<48;i++) {
-      const angle=i*Math.PI/24;
-      const ridge=box(.45,.7,9,'#555963',Math.cos(angle)*8.95,Math.sin(angle)*8.95,6,.7);
-      ridge.rotation.z=angle;
-    }
-    cylinder(7.8,.3,'#858a94',0,0,12.1);
-    box(.6,3,.15,'#eee9dc',0,5,12.3);
+    cylinder(8.6,.4,'#c8d0d4',0,0,12.1);
+    const groove=box(18,1.7,.2,'#67747d',0,0,12.35);groove.rotation.z=Math.PI/4;
   }
   if(part.id==='joystick') {
-    cylinder(6.8,.4,'#aaa1bd',0,0,9.15);
-    for(const r of [3.8,5]) {
-      const ring=new THREE.TorusGeometry(r,.14,6,48);
-      add(ring,'#8d839e',[0,0,9.4]);
-    }
+    box(18.5,18.5,1,'#a2aaad',0,0,0,.7);
+    cylinder(7.4,.4,'#26292b',0,0,9.15);
+    for(let i=0;i<4;i++){const angle=Math.PI/4+i*Math.PI/2;const mark=box(3,.6,.15,'#101314',Math.cos(angle)*4.7,Math.sin(angle)*4.7,9.4);mark.rotation.z=angle;}
   }
   if(part.id.startsWith('switch-')) {
     box(4,1.3,3,'#caa6db',0,0,8);
@@ -79,6 +85,8 @@ export function decorate(mesh, part) {
     }
   }
   if(part.id==='top') {
-    text('CODEX / MICRO',29,2.6,0,48,3.04,'#817b86');
+    text('CODEX / MICRO',29,2.6,0,-44,3.04,'#697176');
+    for(const x of [-42,42])for(const y of [-42,42]){cylinder(2.4,1.7,'#34393b',x,y,3.7);cylinder(1.2,.15,'#111517',x,y,4.6);}
+    cylinder(7,.2,'#9ca5a9',-30,-30,3.15);cylinder(4.8,.25,'#14191d',-30,-30,3.35);
   }
 }

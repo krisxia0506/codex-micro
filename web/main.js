@@ -13,7 +13,7 @@ try { renderer=new THREE.WebGLRenderer({antialias:true}); } catch { host.textCon
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1; renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; host.appendChild(renderer.domElement);
 const labels=new CSS2DRenderer(); labels.domElement.className='model-labels'; host.appendChild(labels.domElement);
 const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.minDistance=100; controls.maxDistance=700;
-function reset(){camera.position.set(160,-210,220); controls.target.set(0,0,30); controls.update();} reset();
+function reset(){camera.position.set(120,-160,180); controls.target.set(0,0,30); controls.update();} reset();
 scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1; floor.receiveShadow=true; scene.add(floor);
@@ -35,6 +35,8 @@ $('#count').textContent=`${parts.length-taskKeys.length+1} 项`;
 $('#count').title=`共 ${parts.length} 个零件，任务键合并为一个分组`;
 for(const part of parts){
  const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); decorate(mesh,part);
+ if(/^key-[1-6]$/.test(part.id)){mesh.material.transparent=true;mesh.material.opacity=.88;mesh.material.roughness=.22;mesh.material.emissive.set(part.color);mesh.material.emissiveIntensity=.18;}
+
  if(!part.printable && !part.id.startsWith('switch-')) {
   const button=document.createElement('button'); button.className='component-label'; button.textContent=part.name; button.onclick=()=>select(part);
   const label=new CSS2DObject(button); label.position.set(0,0,8); mesh.add(label); annotations.push(label);
@@ -45,9 +47,9 @@ for(const part of parts){
  row.querySelector('button').onclick=()=>select(part); part.row=row;
  if(taskKeys.includes(part)){if(!taskGroup.isConnected)$('#parts').appendChild(taskGroup);groupChildren.appendChild(row);}else $('#parts').appendChild(row);
 }
-function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':'电子元件占位 · 不提供打印文件'; for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#30233c':'#000000'); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
+function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':'电子元件占位 · 不提供打印文件'; for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
 $('#explode').oninput=e=>{const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
-$('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,400); controls.target.set(0,0,0); controls.update();};
+$('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
 $('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
 $('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||(!m.userData.part.printable||m.userData.part.electronicLayer===true);m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='xiao'));syncTaskGroup();};
@@ -59,7 +61,7 @@ const xiaoPart=parts.find(p=>p.id==='xiao');
 for(const [i,[x,y]] of socketPart.socketPositions.entries()){
  for(let side=0;side<2;side++){
   const direction=side===0?-1:1;
-  const endY=43+(i%7)*2.1;
+  const endY=34+(i%7)*2.1;
   const points=[[x+direction*5,y-3.5,6.5],[x+direction*9,y-8,4.2],
     [direction*(39+i*.7),y-10,4.2],[direction*(39+i*.7),35,4.2],
     [direction*13,endY,5.5],[direction*8.3,endY,6.05]].map(p=>new THREE.Vector3(...p));
