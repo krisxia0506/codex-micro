@@ -1,5 +1,6 @@
 # Codex Micro Keyboard
 
+[![CI](https://github.com/krisxia0506/codex-micro/actions/workflows/ci.yml/badge.svg)](https://github.com/krisxia0506/codex-micro/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Status: Research](https://img.shields.io/badge/Status-Research-orange.svg)](docs/research/codex-micro.md)
 
@@ -52,6 +53,19 @@ cd codex-micro
 - [贡献指南](CONTRIBUTING.md)
 - [行为准则](CODE_OF_CONDUCT.md)
 - [安全问题报告](SECURITY.md)
+
+## 仓库质量检查
+
+本地使用 Python 3.12 或更高版本运行：
+
+```bash
+python3 scripts/check_repository.py
+git diff --check
+```
+
+CI 在 Pull Request 和 `main` 更新时检查已跟踪 Markdown 的内联链接目标文件、素材 SHA-256 清单和补丁空白错误。不请求外部网站，不检查标题锚点、引用式链接或 HTML 链接。当前不包含硬件、固件或桌面程序的构建与功能验证。
+
+GitHub Actions 依赖固定到提交 SHA，由 Dependabot 每周检查更新。仓库维护设置见[维护说明](docs/maintaining.md)。
 
 ## 许可证与项目关系
 
