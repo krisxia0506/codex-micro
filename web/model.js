@@ -55,7 +55,7 @@ export function createParts() {
   const sockets=mergeGeometries(keys.map(k=>{
     const g=new THREE.BoxGeometry(14,6,3).toNonIndexed();g.translate(k.x,k.y-2,0);return g;
   }));
-  electronic('sockets','热插拔底座组',sockets,[0,0,6.5],'#30343a','10 个底座位于轴体引脚下方，由打印支架承托；具体底座型号及锁止尺寸待核对。可改为直接焊线。');
+  electronic('sockets','Kailh MX 底座组',sockets,[0,0,6.5],'#30343a','10 个底座位于轴体引脚下方，由打印支架承托；已确定使用凯华 Kailh MX；具体料号、外形与锁止尺寸待图纸或实物核对。可改为直接焊线。');
   parts.at(-1).socketPositions=keys.map(k=>[k.x,k.y-2]);
   // Repeated, connected-per-socket carrier samples. Their retention fit is not validated.
   const carriers=mergeGeometries(keys.map(k=>{
