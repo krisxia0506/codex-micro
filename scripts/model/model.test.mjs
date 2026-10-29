@@ -40,3 +40,12 @@ test('reference layout has 2+4 task keys and a two-switch voice key',()=>{
  const underVoice=parts.filter(p=>p.id.startsWith('switch-')&&p.position[1]===voice.position[1]&&Math.abs(p.position[0]-voice.position[0])<voice.geometry.boundingBox.max.x);
  assert.equal(underVoice.length,2);
 });
+test('floating keys remain above the low switch plate and enclosure rim',()=>{
+ const plate=parts.find(p=>p.id==='top'),wall=parts.find(p=>p.id==='wall');
+ plate.geometry.computeBoundingBox();wall.geometry.computeBoundingBox();
+ const plateTop=plate.position[2]+plate.geometry.boundingBox.max.z;
+ assert.ok(wall.position[2]+wall.geometry.boundingBox.max.z<=plateTop);
+ for(const key of parts.filter(p=>p.id.startsWith('key-'))){
+  key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=6);
+ }
+});

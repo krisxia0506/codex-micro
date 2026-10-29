@@ -85,8 +85,11 @@ export function decorate(mesh, part) {
     }
   }
   if(part.id==='top') {
+    // Decorative marks sit on the low plate, not a raised cover.
+    const before=new Set(mesh.children);
     text('CODEX / MICRO',29,2.6,0,-44,3.04,'#697176');
     for(const x of [-42,42])for(const y of [-42,42]){cylinder(2.4,1.7,'#34393b',x,y,3.7);cylinder(1.2,.15,'#111517',x,y,4.6);}
     cylinder(7,.2,'#9ca5a9',-30,-30,3.15);cylinder(4.8,.25,'#14191d',-30,-30,3.35);
+    for(const child of mesh.children)if(!before.has(child))child.position.z-=1.5;
   }
 }
