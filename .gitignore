@@ -2,3 +2,7 @@
 .env
 .env.*
 !.env.example
+node_modules/
+dist/
+exports/
+public/codex-micro-stl.zip

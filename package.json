@@ -1,0 +1,19 @@
+{
+  "name": "codex-micro-workbench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run export:stl && vite --host 127.0.0.1",
+    "build": "npm run export:stl && vite build",
+    "export:stl": "node scripts/model/export.mjs",
+    "test": "node --test scripts/model/model.test.mjs"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "vite": "7.3.7"
+  }
+}
