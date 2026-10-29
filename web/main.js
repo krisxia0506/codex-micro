@@ -18,7 +18,21 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1; floor.receiveShadow=true; scene.add(floor);
 const parts=createParts(); const meshes=[]; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
-$('#count').textContent=String(parts.length).padStart(2,'0');
+const taskKeys=parts.filter(part=>/^key-[1-6]$/.test(part.id));
+const taskGroup=document.createElement('div'); taskGroup.className='task-group';
+taskGroup.innerHTML='<div class="part-row task-group-header"><input type="checkbox" checked aria-label="显示任务键组"><button aria-expanded="false" aria-controls="task-key-children"><span class="group-arrow">▸</span>任务键组<small>6 个</small></button></div><div id="task-key-children" class="task-group-children" hidden></div>';
+const groupToggle=taskGroup.querySelector('button'), groupCheck=taskGroup.querySelector('input');
+const groupChildren=taskGroup.querySelector('.task-group-children');
+function expandTaskGroup(open){groupChildren.hidden=!open;groupToggle.setAttribute('aria-expanded',String(open));taskGroup.querySelector('.group-arrow').textContent=open?'▾':'▸';}
+groupToggle.onclick=()=>expandTaskGroup(groupChildren.hidden);
+function syncTaskGroup(){
+ const count=meshes.filter(m=>taskKeys.includes(m.userData.part)&&m.visible).length;
+ groupCheck.checked=count===taskKeys.length;groupCheck.indeterminate=count>0&&count<taskKeys.length;
+ taskGroup.classList.toggle('contains-selection',taskKeys.includes(selected));
+}
+groupCheck.onchange=()=>{for(const m of meshes.filter(m=>taskKeys.includes(m.userData.part))){m.visible=groupCheck.checked;m.userData.part.row.querySelector('input').checked=m.visible;}syncTaskGroup();};
+$('#count').textContent=`${parts.length-taskKeys.length+1} 项`;
+$('#count').title=`共 ${parts.length} 个零件，任务键合并为一个分组`;
 for(const part of parts){
  const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); decorate(mesh,part);
  if(!part.printable && !part.id.startsWith('switch-')) {
@@ -27,15 +41,16 @@ for(const part of parts){
  }
  mesh.castShadow=true; mesh.receiveShadow=true; mesh.userData.part=part; scene.add(mesh); meshes.push(mesh);
  const row=document.createElement('div'); row.className='part-row'; row.innerHTML=`<input type="checkbox" checked aria-label="显示${part.name}"><button><i style="background:${part.color}"></i>${part.name}<small>${part.id}</small></button>`;
- row.querySelector('input').onchange=e=>mesh.visible=e.target.checked;
- row.querySelector('button').onclick=()=>select(part); part.row=row; $('#parts').appendChild(row);
+ row.querySelector('input').onchange=e=>{mesh.visible=e.target.checked;syncTaskGroup();};
+ row.querySelector('button').onclick=()=>select(part); part.row=row;
+ if(taskKeys.includes(part)){if(!taskGroup.isConnected)$('#parts').appendChild(taskGroup);groupChildren.appendChild(row);}else $('#parts').appendChild(row);
 }
-function select(part){ selected=part; $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':'电子元件占位 · 不提供打印文件'; for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#30233c':'#000000'); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
+function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':'电子元件占位 · 不提供打印文件'; for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#30233c':'#000000'); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
 $('#explode').oninput=e=>{const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
 $('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,400); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
-$('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});};
-$('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||!m.userData.part.printable;m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='pcb'));};
+$('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
+$('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||!m.userData.part.printable;m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='pcb'));syncTaskGroup();};
 $('#labels').onchange=()=>{};
 
 const ray=new THREE.Raycaster(), pointer=new THREE.Vector2(); let down;
