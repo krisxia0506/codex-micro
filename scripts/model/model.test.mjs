@@ -49,3 +49,18 @@ test('floating keys remain above the low switch plate and enclosure rim',()=>{
   key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=6);
  }
 });
+
+// Check the actual tube surface, including its radius, against the usable cavity.
+test('all handwires stay inside the enclosure cavity',async()=>{
+ const { wireGeometry }=await import('../../web/harness.js');
+ const sockets=parts.find(p=>p.id==='sockets').socketPositions;
+ for(const [index,[x,y]] of sockets.entries())for(let side=0;side<2;side++){
+  const geometry=wireGeometry(x,y,index,side);const vertices=geometry.getAttribute('position');
+  for(let i=0;i<vertices.count;i++){
+   assert.ok(Math.abs(vertices.getX(i))<49,'wire crosses the side corridor');
+   assert.ok(Math.abs(vertices.getY(i))<49,'wire crosses the end corridor');
+   assert.ok(vertices.getZ(i)>3&&vertices.getZ(i)<10,'wire crosses floor or plate');
+  }
+  geometry.dispose();
+ }
+});

@@ -4,6 +4,7 @@ import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { createParts, printableGeometry } from './model.js';
 import './style.css';
 import { decorate } from './details.js';
+import { wireGeometry } from './harness.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 const $=s=>document.querySelector(s), host=$('#viewport');
 const scene=new THREE.Scene(); scene.background=new THREE.Color('#edece8');
@@ -60,13 +61,7 @@ const socketPart=parts.find(p=>p.id==='sockets');
 const xiaoPart=parts.find(p=>p.id==='xiao');
 for(const [i,[x,y]] of socketPart.socketPositions.entries()){
  for(let side=0;side<2;side++){
-  const direction=side===0?-1:1;
-  const endY=34+(i%7)*2.1;
-  const points=[[x+direction*5,y-3.5,6.5],[x+direction*9,y-8,4.2],
-    [direction*(39+i*.7),y-10,4.2],[direction*(39+i*.7),35,4.2],
-    [direction*13,endY,5.5],[direction*8.3,endY,6.05]].map(p=>new THREE.Vector3(...p));
-  const curve=new THREE.CatmullRomCurve3(points);
-  const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,50,.35,6,false),new THREE.MeshStandardMaterial({color:side===0?'#c99565':'#6a9da5',roughness:.7}));
+  const wire=new THREE.Mesh(wireGeometry(x,y,i,side),new THREE.MeshStandardMaterial({color:side===0?'#c99565':'#6a9da5',roughness:.7}));
   harness.add(wire);
  }
 }
