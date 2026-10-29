@@ -77,18 +77,18 @@ export function decorate(mesh, part) {
   }
   if(part.id==='sockets') {
     for(const [x,y] of part.socketPositions){
-      for(const dx of [-5,5]){
-        cylinder(1.5,.2,'#c1a15c',x+dx,y,1.6);
-        cylinder(.7,.22,'#15191c',x+dx,y,1.7);
-        box(2.2,2,1,'#beaa7d',x+dx,y-3.5,0,.8);
+      for(const [dx,dy] of [[-3.81,-2.54],[2.54,-5.08]]){
+        cylinder(.95,.18,'#c1a15c',x+dx,y+dy,8.12);
+        cylinder(.55,.2,'#15191c',x+dx,y+dy,8.14);
       }
+      box(1.6,1.68,.4,'#beaa7d',x-7.16,y-2.54,5.7,.8);
+      box(1.6,1.68,.4,'#beaa7d',x+5.74,y-5.08,5.7,.8);
     }
   }
   if(part.id==='top') {
     // Decorative marks sit on the low plate, not a raised cover.
     const before=new Set(mesh.children);
     text('CODEX / MICRO',29,2.6,0,-44,3.04,'#697176');
-    for(const x of [-42,42])for(const y of [-42,42]){cylinder(2.4,1.7,'#34393b',x,y,3.7);cylinder(1.2,.15,'#111517',x,y,4.6);}
     cylinder(7,.2,'#9ca5a9',-30,-30,3.15);cylinder(4.8,.25,'#14191d',-30,-30,3.35);
     for(const child of mesh.children)if(!before.has(child))child.position.z-=1.5;
   }

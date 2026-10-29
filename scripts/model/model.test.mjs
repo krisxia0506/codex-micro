@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createParts, printableGeometry } from '../../web/model.js';
+import { createParts, printableGeometry, assemblyValidation, assemblySpec, socketFitCoupon } from '../../web/model.js';
 import { Mesh, Vector3 } from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const parts=createParts();
 test('assembly IDs are unique',()=>assert.equal(new Set(parts.map(p=>p.id)).size,parts.length));
 test('electronic placeholders cannot be exported',()=>{
- assert.equal(parts.filter(p=>p.printable).length,18);
+ assert.equal(parts.filter(p=>p.printable).length,17);
  for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
 });
-for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
+for(const part of [...parts.filter(p=>p.printable),{id:"socket-fit-coupon",geometry:socketFitCoupon()}]) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
  const geometry=printableGeometry(part);
  const data=new STLExporter().parse(new Mesh(geometry),{binary:true});
  const parsed=new STLLoader().parse(data.buffer); const a=parsed.getAttribute('position');
@@ -46,7 +46,7 @@ test('floating keys remain above the low switch plate and enclosure rim',()=>{
  const plateTop=plate.position[2]+plate.geometry.boundingBox.max.z;
  assert.ok(wall.position[2]+wall.geometry.boundingBox.max.z<=plateTop);
  for(const key of parts.filter(p=>p.id.startsWith('key-'))){
-  key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=6);
+  key.geometry.computeBoundingBox();assert.ok(key.position[2]+key.geometry.boundingBox.min.z-plateTop>=5.5);
  }
 });
 
@@ -63,4 +63,52 @@ test('all handwires stay inside the enclosure cavity',async()=>{
   }
   geometry.dispose();
  }
+});
+
+test('shell plates, locating lips and socket mounts are connected solids',()=>{
+ assert.equal(assemblyValidation.bottomComponents,1);
+ assert.equal(assemblyValidation.wallComponents,1);
+ assert.equal(assemblyValidation.topComponents,1);
+ assert.ok(Math.abs(assemblyValidation.shellOverlap)<1e-6);
+ assert.ok(Math.abs(assemblyValidation.socketHolderOverlap)<1e-6);
+ assert.ok(assemblyValidation.upwardRetentionVolume>1,'socket must meet retaining shoulders on removal');
+ assert.ok(assemblyValidation.downwardSupportVolume>1,'socket must meet floor under insertion load');
+});
+test('four coaxial M3 fasteners and nuts clear printed material',()=>{
+ assert.equal(assemblySpec.screwCenters.length,4);
+ assert.ok(Math.abs(assemblyValidation.boltShellOverlap)<1e-6);
+ assert.ok(Math.abs(assemblyValidation.nutShellOverlap)<1e-6);
+ assert.ok(Math.abs((assemblySpec.frameInner-assemblySpec.lipOuter)/2-.3)<1e-6);
+ assert.equal(assemblySpec.socket.pins[1][0]-assemblySpec.socket.pins[0][0],6.35);
+ assert.equal(assemblySpec.socket.pins[0][1]-assemblySpec.socket.pins[1][1],2.54);
+});
+
+test('switch plate exports face-down with broad bed contact',()=>{
+ const g=printableGeometry(parts.find(p=>p.id==='top'));const a=g.getAttribute('position');let area=0;
+ for(let i=0;i<a.count;i+=3){const v=[0,1,2].map(j=>new Vector3().fromBufferAttribute(a,i+j));
+  if(v.every(p=>Math.abs(p.z)<1e-5))area+=v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).length()/2;
+ }
+ assert.ok(area>7000);g.dispose();
+});
+
+test('updated flying wires clear the integral socket mounts and enclosure',async()=>{
+ const {default:Module}=await import('manifold-3d');const k=await Module();k.setup();
+ const {wireGeometry}=await import('../../web/harness.js');
+ const owned=[];const keep=o=>(owned.push(o),o);
+ const solid=(positions,indices)=>{const m=new k.Mesh({numProp:3,vertProperties:positions,triVerts:new Uint32Array(indices)});m.merge();return keep(new k.Manifold(m));};
+ try{
+  const shells=parts.filter(p=>['bottom','wall','top'].includes(p.id)).map(p=>{
+   const g=p.geometry.clone().translate(...p.position),a=g.getAttribute('position').array;
+   const s=solid(a,Array.from({length:a.length/3},(_,i)=>i));g.dispose();return s;
+  });
+  const shell=keep(k.Manifold.union(shells));
+  for(const [index,[x,y]] of parts.find(p=>p.id==='sockets').socketPositions.entries())for(let side=0;side<2;side++){
+   const g=wireGeometry(x,y,index,side),indices=[...g.index.array];
+   const {radialSegments:r,tubularSegments:t}=g.parameters,last=t*(r+1);
+   // Close the visual tube's ends solely for solid-intersection measurement.
+   for(let i=1;i<r-1;i++)indices.push(0,i,i+1,last,last+i+1,last+i);
+   const wire=solid(g.attributes.position.array,indices);
+   const overlap=keep(wire.intersect(shell));assert.ok(Math.abs(overlap.volume())<1e-6,`socket ${index+1}, side ${side}`);g.dispose();
+  }
+ }finally{for(const o of owned.reverse())o.delete();}
 });

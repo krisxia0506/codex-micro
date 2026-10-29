@@ -1,8 +1,12 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildAssembly, assemblySpec } from './assembly.js';
+export { assemblySpec };
+export let assemblyValidation;
+let fitCoupon;
+export function socketFitCoupon(){if(!fitCoupon)createParts();return fitCoupon.clone();}
 
 // All geometry uses millimetres. Z is the assembly's vertical axis.
-export const dimensions = { width: 110, depth: 110, wall: 3, height: 11.5 };
+export const dimensions = { width: 110, depth: 110, wall: 3, height: 12.5 };
 function rectangle(w, d, x = 0, y = 0) {
   const p = new THREE.Path();
   p.moveTo(x-w/2,y-d/2); p.lineTo(x+w/2,y-d/2);
@@ -49,8 +53,6 @@ export function createParts() {
   function add(id,name,geometry,position,color,level,description) {
     parts.push({id,name,geometry,position,color,level,description,printable:true});
   }
-  add('bottom','底板',plate(110,110,3),[0,0,0],'#c8cbd0',0,'110 × 110 × 3 mm；独立平板试样。');
-  add('wall','外壳围框',plate(110,110,7,[new THREE.Path(rounded(104,104,6).getPoints())]),[0,0,3],'#e0e2e4',1,'3 mm 壁厚，7 mm 高；接口与固定结构待硬件选型。');
   const keys=[];
   const taskLocations=[[-10,30],[10,30],[-30,10],[-10,10],[10,10],[30,10]];
   taskLocations.forEach(([x,y],i)=>keys.push({x,y,w:18.5,d:18.5,name:`任务键 ${i+1}`,color:['#a4f1cf','#ffe0a0','#a8bfff','#e5eced','#b8c6ff','#f4adc9'][i]}));
@@ -58,9 +60,11 @@ export function createParts() {
   keys.push({x:0,y:-30,w:38.5,d:18.5,name:'语音键',color:'#e9edef'});
   keys.push({x:30,y:-30,w:18.5,d:18.5,name:'发送',color:'#e9edef'});
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
-  const holes=switchLocations.map(k=>rectangle(14.2,14.2,k.x,k.y));
-  holes.push(circle(9.8,-30,30),circle(9,30,30));
-  add('top','低位轴体定位板',plate(110,110,1.5,holes),[0,0,10],'#c5cdd0',2.5,'位于键帽和轴体肩部下方，不包围键帽。14.2 mm 方孔与 1.5 mm 板厚为设计假设，卡扣配合待实物验证。');
+  const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
+  fitCoupon?.dispose();fitCoupon=assembly.coupon;
+  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；13 个一体承托槽、弹性限位舌与防脱肩；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
+  add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 高中框；四角贯穿螺丝支柱，上下端接纳定位凸沿，单侧 0.30 mm 配合间隙。凸沿负责定位，M3 螺丝负责锁紧。');
+  add('top','轴体定位板 · 下凸沿',assembly.top,[0,0,10],'#c5cdd0',2.5,'1.5 mm 轴体板，四角向下局部加厚至 2.5 mm；下侧一圈 1.6 mm 凸沿；四角直径 3.4 mm 通孔。14.2 mm 轴孔为打印试配值，卡爪配合仍待试装。');
   keys.forEach((k,i)=>add(`key-${i+1}`,k.name,keycap(k.w,k.d,7),[k.x,k.y,18],k.color,4,'实心外观占位件，无轴体十字柱，不能作为功能键帽。'));
   const knob=new THREE.CylinderGeometry(9,9,12,48); knob.rotateX(Math.PI/2); knob.translate(0,0,6);
   add('knob','旋钮',knob,[-30,30,18],'#bac3c7',4,'直径 18 mm；实心占位件，未设计编码器轴孔。');
@@ -71,25 +75,23 @@ export function createParts() {
     parts.at(-1).printable=false;
   };
   electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[0,40,5],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
-  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
+  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8.5],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-30,30,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[30,30,7],'#373c43','位于右上摇杆帽下方。');
-  const sockets=mergeGeometries(switchLocations.map(k=>{
-    const g=new THREE.BoxGeometry(14,6,3).toNonIndexed();g.translate(k.x,k.y-2,0);return g;
-  }));
-  electronic('sockets','Kailh MX 底座组',sockets,[0,0,6.5],'#30343a','13 个底座位于轴体引脚下方，由打印支架承托；已确定使用凯华 Kailh MX；具体料号、外形与锁止尺寸待图纸或实物核对。可改为直接焊线。');
-  parts.at(-1).socketPositions=switchLocations.map(k=>[k.x,k.y-2]);
-  // Repeated, connected-per-socket carrier samples. Their retention fit is not validated.
-  const carriers=mergeGeometries(switchLocations.map(k=>{
-    const g=plate(19,12,3,[rectangle(14.6,6.6)]);g.translate(k.x,k.y-2,0);return g;
-  }));
-  add('socket-carriers','底座承托框组 · 试样',carriers,[0,0,5],'#d2c8b6',2,'13 个打印承托框位置试样；内孔 14.6 × 6.6 mm 仅为占位假设，无锁止卡扣，不能直接固定实际底座。待实物尺寸确认后设计。');
-  parts.at(-1).electronicLayer=true;
+  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。底板卡槽承托，两个防脱肩限位；小圆角简化，待打印试配。');
+  parts.at(-1).socketPositions=switchLocations.map(k=>[k.x,k.y]);
+  electronic('case-screws','四角 M3 × 12 螺丝',assembly.bolts,[0,0,0],'#72777d','4 颗 M3 × 12 内六角圆柱头螺丝，从顶板贯穿中框进入底板螺母；不打印。');
+  parts.at(-1).level=3.2;
+  electronic('case-nuts','底板 M3 六角螺母',assembly.nuts,[0,0,0],'#aaaeb3','4 颗 M3 六角螺母，从底面放入 5.8 mm 对边、2.6 mm 深的防转槽；不打印。');
+  parts.at(-1).level=-.25;
   return parts;
 }
 export function printableGeometry(part) {
   if(part.printable===false) throw new Error(`Electronic placeholder cannot be printed: ${part.id}`);
-  const geometry=part.geometry.clone(); geometry.computeBoundingBox();
+  const geometry=part.geometry.clone();
+  // Print the switch plate face-down so its locating lip grows upwards.
+  if(part.id==='top')geometry.rotateX(Math.PI);
+  geometry.computeBoundingBox();
   geometry.translate(0,0,-geometry.boundingBox.min.z); return geometry;
 }
 

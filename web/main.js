@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-import { createParts, printableGeometry } from './model.js';
+import { createParts, printableGeometry, socketFitCoupon } from './model.js';
 import './style.css';
 import { decorate } from './details.js';
 import { wireGeometry } from './harness.js';
@@ -17,7 +17,7 @@ const controls=new OrbitControls(camera,renderer.domElement); controls.enableDam
 function reset(){camera.position.set(120,-160,180); controls.target.set(0,0,30); controls.update();} reset();
 scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1; floor.receiveShadow=true; scene.add(floor);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1.1; floor.receiveShadow=true; scene.add(floor);
 const parts=createParts(); const meshes=[]; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
 const taskKeys=parts.filter(part=>/^key-[1-6]$/.test(part.id));
 const taskGroup=document.createElement('div'); taskGroup.className='task-group';
@@ -38,7 +38,7 @@ for(const part of parts){
  const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); decorate(mesh,part);
  if(/^key-[1-6]$/.test(part.id)){mesh.material.transparent=true;mesh.material.opacity=.88;mesh.material.roughness=.22;mesh.material.emissive.set(part.color);mesh.material.emissiveIntensity=.18;}
 
- if(!part.printable && !part.id.startsWith('switch-')) {
+ if(!part.printable && !part.id.startsWith('switch-') && !part.id.startsWith('case-')) {
   const button=document.createElement('button'); button.className='component-label'; button.textContent=part.name; button.onclick=()=>select(part);
   const label=new CSS2DObject(button); label.position.set(0,0,8); mesh.add(label); annotations.push(label);
  }
@@ -48,8 +48,19 @@ for(const part of parts){
  row.querySelector('button').onclick=()=>select(part); part.row=row;
  if(taskKeys.includes(part)){if(!taskGroup.isConnected)$('#parts').appendChild(taskGroup);groupChildren.appendChild(row);}else $('#parts').appendChild(row);
 }
-function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':'电子元件占位 · 不提供打印文件'; for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
+function select(part){ selected=part; if(taskKeys.includes(part))expandTaskGroup(true);syncTaskGroup(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':(part.id.startsWith('case-')?'标准紧固件 · 不提供打印文件':'电子元件占位 · 不提供打印文件'); for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
 $('#explode').oninput=e=>{const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
+$('#assembly').onclick=()=>{
+ electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
+ const ids=['bottom','wall','top','sockets','case-screws','case-nuts'];
+ for(const mesh of meshes){mesh.visible=ids.includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
+ $('#explode').value='80';$('#explode').dispatchEvent(new Event('input'));camera.position.set(155,-210,150);controls.target.set(0,0,45);controls.update();select(parts.find(p=>p.id==='bottom'));
+};
+$('#mounts').onclick=()=>{
+ electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
+ for(const mesh of meshes){mesh.visible=['bottom','sockets'].includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
+ $('#explode').value='20';$('#explode').dispatchEvent(new Event('input'));camera.position.set(100,-150,180);controls.target.set(0,0,15);controls.update();select(parts.find(p=>p.id==='bottom'));
+};
 $('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
 $('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
@@ -70,6 +81,7 @@ const ray=new THREE.Raycaster(), pointer=new THREE.Vector2(); let down;
 host.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]); host.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return; const r=host.getBoundingClientRect(); pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(pointer,camera); const hit=ray.intersectObjects(meshes.filter(m=>m.visible))[0]; if(hit){let object=hit.object;while(!object.userData.part&&object.parent)object=object.parent;select(object.userData.part);}});
 function save(data,name){const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('#download').onclick=()=>{if(!selected.printable)return;const mesh=new THREE.Mesh(printableGeometry(selected));const data=new STLExporter().parse(mesh,{binary:true});save(data,`codex-micro-${selected.id}-mm.stl`);mesh.geometry.dispose();};
+$('#download-coupon').onclick=()=>{const g=socketFitCoupon();const data=new STLExporter().parse(new THREE.Mesh(g),{binary:true});save(data,'codex-micro-socket-fit-coupon-mm.stl');g.dispose();};
 $('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-stl.zip`;a.download='codex-micro-stl.zip';a.click();};
 new ResizeObserver(()=>{const {width,height}=host.getBoundingClientRect();renderer.setSize(width,height); labels.setSize(width,height); camera.aspect=width/height;camera.updateProjectionMatrix();}).observe(host);
 const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
