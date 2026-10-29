@@ -14,7 +14,7 @@ const {zipSync,strToU8}=await import('fflate');
 const {readFile}=await import('node:fs/promises');
 const archive={};
 for(const part of parts) archive[`${part.id}.stl`]=new Uint8Array(await readFile(new URL(`${part.id}.stl`,dir)));
-archive['README.txt']=strToU8('Codex Micro concept samples v0.1\nUnits: millimetres (mm). Each STL rests on Z=0.\nNo PCB/switch/fastener fit validation. Solid controls are appearance placeholders.\nUse your slicer to check orientation, supports and tolerances. Not a working keyboard kit.\n');
+archive['README.txt']=strToU8('Codex Micro handwired concept samples v0.3\nUnits: millimetres (mm). Each STL rests on Z=0.\nXIAO Sense Plus and handwired architecture. Socket carriers are unretained layout samples, not fit-validated mounts. No switch/fastener fit validation. Solid controls are appearance placeholders.\nUse your slicer to check orientation, supports and tolerances. Not a working keyboard kit.\n');
 archive['manifest.json']=new Uint8Array(await readFile(new URL('../manifest.json',dir)));
 const publicDir=new URL('../../public/',import.meta.url);await mkdir(publicDir,{recursive:true});
 await writeFile(new URL('codex-micro-stl.zip',publicDir),zipSync(archive));

@@ -30,7 +30,7 @@
 
 ## 3D 模型工作台
 
-支持旋转、爆炸拆解、逐件显隐和 STL 下载。网页和打印文件共用几何源。运行方式和打印边界见[模型工作台说明](docs/model-workbench.md)。
+支持旋转、爆炸拆解、逐件显隐和 STL 下载。当前按 XIAO nRF52840 Sense Plus、热插拔底座和软线飞线结构展示，不使用整块键盘 PCB。网页和打印文件共用几何源。运行方式和打印边界见[模型工作台说明](docs/model-workbench.md)。
 
 ```bash
 npm ci

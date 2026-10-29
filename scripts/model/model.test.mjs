@@ -7,7 +7,7 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const parts=createParts();
 test('assembly IDs are unique',()=>assert.equal(new Set(parts.map(p=>p.id)).size,parts.length));
 test('electronic placeholders cannot be exported',()=>{
- assert.equal(parts.filter(p=>p.printable).length,15);
+ assert.equal(parts.filter(p=>p.printable).length,16);
  for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
 });
 for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
@@ -24,4 +24,10 @@ for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, po
  }
  for(const [edge,[count,orientation]] of edges){assert.equal(count,2,edge);assert.equal(orientation,0,edge);}
  assert.ok(volume>0);parsed.computeBoundingBox();assert.ok(Math.abs(parsed.boundingBox.min.z)<1e-5);
+});
+
+test('handwired architecture uses a module instead of a full PCB',()=>{
+ assert.ok(parts.some(p=>p.id==='xiao'));
+ assert.ok(!parts.some(p=>['pcb','mcu','power','usb'].includes(p.id)));
+ assert.equal(parts.find(p=>p.id==='sockets').socketPositions.length,10);
 });

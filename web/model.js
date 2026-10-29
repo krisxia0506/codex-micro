@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // All geometry uses millimetres. Z is the assembly's vertical axis.
 export const dimensions = { width: 110, depth: 132, wall: 3, height: 20 };
@@ -44,16 +45,24 @@ export function createParts() {
   const stick=new THREE.CylinderGeometry(8,6,9,40); stick.rotateX(Math.PI/2); stick.translate(0,0,4.5);
   add('joystick','摇杆帽',stick,[32,48,18],'#d0c3ed',4,'实心外观占位件，未适配实际摇杆。');
   const electronic=(id,name,geometry,position,color,description)=>{
-    add(id,name,geometry,position,color,2,description+' 布局占位，未选型、未布线，不导出 STL。');
+    add(id,name,geometry,position,color,2,description+' 展示示意，不导出 STL。');
     parts.at(-1).printable=false;
   };
-  electronic('pcb','PCB 主板',plate(100,122,1.6,[-44,44].flatMap(x=>[-55,55].map(y=>circle(1.6,x,y)))),[0,0,5],'#17483d','100 × 122 × 1.6 mm 双层板外观示意。');
+  electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[0,49,5],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
   keys.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-32,48,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[32,48,7],'#373c43','位于右上摇杆帽下方。');
-  electronic('usb','J1 · USB-C 接口',cap(9,7,3),[0,59,6.6],'#aeb3bd','后侧中央接口布局；外壳尚未开孔。');
-  electronic('mcu','U1 · 主控芯片',cap(9,9,1.5),[0,43,6.6],'#222831','主控布局候选区，不指定芯片型号。');
-  electronic('power','U2 · 电源管理',cap(5,5,1.2),[-17,43,6.6],'#222831','接口邻近电源区，不代表已完成供电电路。');
+  const sockets=mergeGeometries(keys.map(k=>{
+    const g=new THREE.BoxGeometry(14,6,3).toNonIndexed();g.translate(k.x,k.y-2,0);return g;
+  }));
+  electronic('sockets','热插拔底座组',sockets,[0,0,6.5],'#30343a','10 个底座位于轴体引脚下方，由打印支架承托；具体底座型号及锁止尺寸待核对。可改为直接焊线。');
+  parts.at(-1).socketPositions=keys.map(k=>[k.x,k.y-2]);
+  // Repeated, connected-per-socket carrier samples. Their retention fit is not validated.
+  const carriers=mergeGeometries(keys.map(k=>{
+    const g=plate(19,12,3,[rectangle(14.6,6.6)]);g.translate(k.x,k.y-2,0);return g;
+  }));
+  add('socket-carriers','底座承托框组 · 试样',carriers,[0,0,5],'#d2c8b6',2,'10 个打印承托框位置试样；内孔 14.6 × 6.6 mm 仅为占位假设，无锁止卡扣，不能直接固定实际底座。待实物尺寸确认后设计。');
+  parts.at(-1).electronicLayer=true;
   return parts;
 }
 export function printableGeometry(part) {

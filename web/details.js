@@ -57,36 +57,25 @@ export function decorate(mesh, part) {
     cylinder(6,2,'#aaaeb6',0,0,8);
     cylinder(2.5,4,'#bfc2c6',0,0,11);
   }
-  if(part.id==='usb') {
-    box(7,.15,1.8,'#171d24',0,3.55,1.5);
-    box(5,.2,.35,'#ba9857',0,3.68,1.5,.8);
+  if(part.id==='xiao') {
+    // Features communicate the module's architecture, not exact component placement.
+    box(8,7,2.5,'#aeb3bd',0,8,2.25,.8);
+    box(6.6,.2,1.5,'#171d24',0,11.6,2.25);
+    box(7,7,1.4,'#9ca4a9',0,-1,1.7,.8);
+    text('nRF52',6,1.6,0,-1,2.43,'#263635');
+    box(3,2.5,1,'#bda266',-4,-7,1.5,.5);
+    text('MIC',3,1,-4,-7,2.04,'#352d23');
+    box(2,3,1,'#252930',4,-7,1.5);
+    for(const x of [-8.3,8.3])for(let i=0;i<7;i++)box(1.4,1.6,.1,'#d4ad65',x,-7.6+i*2.54,1.05,.8);
+    text('XIAO',7,1.6,0,-9,1.1,'#e4e0cd');
   }
-  if(['mcu','power'].includes(part.id)) {
-    const size=part.id==='mcu'?9:5;
-    for(let i=-3;i<=3;i++)for(const sign of [-1,1]){
-      box(.5,1.5,.3,'#c4c5bd',i*size/9,sign*(size/2+.4),.5,.8);
-      box(1.5,.5,.3,'#c4c5bd',sign*(size/2+.4),i*size/9,.5,.8);
-    }
-    text(part.id==='mcu'?'MCU':'PWR',size-1,1.5,0,0,part.id==='mcu'?1.53:1.23,'#c6c8c5');
-  }
-  if(part.id==='pcb') {
-    text('CODEX MICRO / REV A · CONCEPT',60,3,0,34,1.63,'#e8e6ce');
-    text('LAYOUT ONLY — NOT ROUTED',53,2.8,0,-44,1.63,'#e8e6ce');
-    for(const x of [-44,44])for(const y of [-55,55]){
-      const ring=new THREE.RingGeometry(1.7,3,32);
-      add(ring,'#c7a659',[x,y,1.64],.8);
-    }
-    for(let row=0;row<3;row++)for(let col=0;col<3;col++){
-      const x=(col-1)*28,y=20-row*26;
-      text(`SW${row*3+col+1}`,10,2,x,y+10,1.64,'#d8e5d4');
-      for(const offset of [-5,5])cylinder(1.3,.1,'#cfb776',x+offset,y,1.65);
-      box(3,1.5,.8,'#e8e3ca',x,y-10,2);
-      box(2,1,.7,'#292b31',x+8,y-10,2);
-    }
-    // Sparse decorative copper traces are illustrative, not a circuit design.
-    for(const x of [-39,39]){
-      box(.25,90,.03,'#417665',x,-2,1.63);
-      for(const y of [-32,-6,20])box(8,.25,.03,'#417665',x+(x<0?4:-4),y,1.63);
+  if(part.id==='sockets') {
+    for(const [x,y] of part.socketPositions){
+      for(const dx of [-5,5]){
+        cylinder(1.5,.2,'#c1a15c',x+dx,y,1.6);
+        cylinder(.7,.22,'#15191c',x+dx,y,1.7);
+        box(2.2,2,1,'#beaa7d',x+dx,y-3.5,0,.8);
+      }
     }
   }
   if(part.id==='top') {

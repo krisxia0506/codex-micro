@@ -50,9 +50,25 @@ $('#explode').oninput=e=>{const t=Number(e.target.value)/100; $('#amount').textC
 $('#reset').onclick=reset; $('#top').onclick=()=>{camera.position.set(0,-.01,400); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
 $('#show-all').onclick=()=>{electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncTaskGroup();};
-$('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||!m.userData.part.printable;m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='pcb'));syncTaskGroup();};
+$('#electronics').onchange=e=>{electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||(!m.userData.part.printable||m.userData.part.electronicLayer===true);m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='xiao'));syncTaskGroup();};
 $('#labels').onchange=()=>{};
 
+const harness=new THREE.Group();scene.add(harness);
+const socketPart=parts.find(p=>p.id==='sockets');
+const xiaoPart=parts.find(p=>p.id==='xiao');
+for(const [i,[x,y]] of socketPart.socketPositions.entries()){
+ for(let side=0;side<2;side++){
+  const direction=side===0?-1:1;
+  const endY=43+(i%7)*2.1;
+  const points=[[x+direction*5,y-3.5,6.5],[x+direction*9,y-8,4.2],
+    [direction*(39+i*.7),y-10,4.2],[direction*(39+i*.7),35,4.2],
+    [direction*13,endY,5.5],[direction*8.3,endY,6.05]].map(p=>new THREE.Vector3(...p));
+  const curve=new THREE.CatmullRomCurve3(points);
+  const wire=new THREE.Mesh(new THREE.TubeGeometry(curve,50,.35,6,false),new THREE.MeshStandardMaterial({color:side===0?'#c99565':'#6a9da5',roughness:.7}));
+  harness.add(wire);
+ }
+}
+$('#wires').onchange=()=>{};
 const ray=new THREE.Raycaster(), pointer=new THREE.Vector2(); let down;
 host.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]); host.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return; const r=host.getBoundingClientRect(); pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(pointer,camera); const hit=ray.intersectObjects(meshes.filter(m=>m.visible))[0]; if(hit){let object=hit.object;while(!object.userData.part&&object.parent)object=object.parent;select(object.userData.part);}});
 function save(data,name){const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -64,6 +80,8 @@ leaders.classList.add('label-leaders');host.appendChild(leaders);
 const leaderLines=annotations.map(()=>{const line=document.createElementNS(leaders.namespaceURI,'line');leaders.appendChild(line);return line;});
 renderer.setAnimationLoop(()=>{
  controls.update();
+ harness.visible=$('#wires').checked&&meshes.find(m=>m.userData.part===socketPart).visible&&meshes.find(m=>m.userData.part===xiaoPart).visible;
+ harness.position.z=Number($('#explode').value)/100*50;
  const topVisible=meshes.find(m=>m.userData.part.id==='top').visible;
  const showLabels=$('#labels').checked && (electronicsOnly || Number($('#explode').value)>20 || !topVisible);
  annotations.forEach(label=>label.visible=showLabels);
