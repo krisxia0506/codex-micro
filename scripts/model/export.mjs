@@ -3,7 +3,7 @@ import { Mesh } from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { createParts, printableGeometry, dimensions } from '../../web/model.js';
 const dir=new URL('../../exports/stl/',import.meta.url); await mkdir(dir,{recursive:true});
-const parts=createParts(); const exporter=new STLExporter();
+const parts=createParts().filter(p=>p.printable); const exporter=new STLExporter();
 for(const part of parts) {
   const data=exporter.parse(new Mesh(printableGeometry(part)),{binary:true});
   await writeFile(new URL(`${part.id}.stl`,dir),Buffer.from(data.buffer,data.byteOffset,data.byteLength));

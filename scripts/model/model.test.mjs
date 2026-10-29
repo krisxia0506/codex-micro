@@ -5,8 +5,12 @@ import { Mesh, Vector3 } from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const parts=createParts();
-test('assembly IDs are unique',()=>assert.equal(new Set(parts.map(p=>p.id)).size,15));
-for(const part of parts) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
+test('assembly IDs are unique',()=>assert.equal(new Set(parts.map(p=>p.id)).size,parts.length));
+test('electronic placeholders cannot be exported',()=>{
+ assert.equal(parts.filter(p=>p.printable).length,15);
+ for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
+});
+for(const part of parts.filter(p=>p.printable)) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
  const geometry=printableGeometry(part);
  const data=new STLExporter().parse(new Mesh(geometry),{binary:true});
  const parsed=new STLLoader().parse(data.buffer); const a=parsed.getAttribute('position');
