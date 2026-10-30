@@ -1,6 +1,6 @@
 import { CurvePath, LineCurve3, QuadraticBezierCurve3, TubeGeometry, Vector3 } from 'three';
 
-export const xiaoPosition=[-33,-32,5];
+export const xiaoPosition=[-30,-43.5,5];
 export const xiaoRotation=Math.PI; // USB-C local +Y faces the enclosure's -Y edge.
 export function xiaoWorldPoint(x,y,z){
  const c=Math.cos(xiaoRotation),s=Math.sin(xiaoRotation);
@@ -14,9 +14,9 @@ export function wireGeometry(x,y,index,side){
  const terminalX=side===0?-7.15:6,terminalY=side===0?-2.54:-5.08;
  const routeY=Math.max(y-12,-40.2); // Leave clearance around the lower M3 pillars.
  const points=[[x+terminalX,y+terminalY,5.75],[x+direction*9.1,y+terminalY,5.75],
-  [x+direction*9.1,routeY,5.75],[direction*(39+index*.7),routeY,5.75],
+  [x+direction*9.1,routeY,7.5],[direction*(39+index*.7),routeY,7.5],
   [direction*(39+index*.7),35,5.75],[-47.5,35,5.75],
-  [-47.5,endY,6.4],endpoint].map(p=>new Vector3(...p));
+  [-47.5,-35,7.5],[endpoint[0],-35,7.5],[endpoint[0],endY,7.5],endpoint].map(p=>new Vector3(...p));
  // Rounded polyline stays within the routing points' convex hull. An interpolating
  // spline can overshoot the side corridor and pierce the enclosure wall.
  const curve=new CurvePath();let previous=points[0];

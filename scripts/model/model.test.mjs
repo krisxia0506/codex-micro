@@ -58,7 +58,8 @@ test('all handwires stay inside the enclosure cavity',async()=>{
   const geometry=wireGeometry(x,y,index,side);const vertices=geometry.getAttribute('position');
   for(let i=0;i<vertices.count;i++){
    assert.ok(Math.abs(vertices.getX(i))<49,'wire crosses the side corridor');
-   assert.ok(Math.abs(vertices.getY(i))<49,'wire crosses the end corridor');
+   const vx=vertices.getX(i),vy=vertices.getY(i);
+   assert.ok(Math.abs(vy)<49||(vx>-40&&vx<-20&&vy>-52&&vy<0),'wire must remain in corridor or the recessed XIAO bay');
    assert.ok(vertices.getZ(i)>3&&vertices.getZ(i)<10,'wire crosses floor or plate');
   }
   geometry.dispose();
@@ -189,4 +190,22 @@ test('XIAO USB faces outward and wire endpoints follow rotated pads',async()=>{
   const expected=new Vector3(...xiaoWorldPoint(side===0?-8.3:8.3,-7.6+(i%7)*2.54,1.05));
   assert.ok(end.distanceTo(expected)<1e-6);geometry.dispose();
  }
+});
+
+
+test('XIAO cradle supports the board edges and USB passage opens outside',async()=>{
+ const {xiaoPosition,xiaoWorldPoint}=await import('../../web/harness.js');
+ const [x,y]=xiaoPosition;const material=new MeshBasicMaterial({side:DoubleSide});
+ const bottom=new Mesh(parts.find(p=>p.id==='bottom').geometry,material);
+ const height=(dx)=>new Raycaster(new Vector3(x+dx,y,9),new Vector3(0,0,-1)).intersectObject(bottom)[0]?.point.z;
+ assert.ok(Math.abs(height(8)-5)<1e-4,'PCB edge support height');
+ assert.ok(Math.abs(height(0)-3.8)<1e-4,'underside relief');
+ assert.ok(Math.abs(assemblyValidation.usbPassageOverlap)<1e-6);
+ assert.ok(xiaoWorldPoint(0,11.6,2.25)[1]<-55,'port face reaches exterior');
+ for(const p of parts.filter(p=>['bottom','wall','top'].includes(p.id))){
+  const mesh=new Mesh(p.geometry,material);mesh.position.fromArray(p.position);mesh.updateMatrixWorld();
+  const ray=new Raycaster(new Vector3(x,-60,7.25),new Vector3(0,1,0),0,11);
+  assert.equal(ray.intersectObject(mesh).length,0,'USB approach must be clear through assembled shell');
+ }
+ material.dispose();
 });

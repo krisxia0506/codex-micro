@@ -1,5 +1,6 @@
 import Module from 'manifold-3d';
 import * as THREE from 'three';
+import { xiaoPosition } from './harness.js';
 const wasmURL=new URL('../node_modules/manifold-3d/manifold.wasm',import.meta.url);
 const kernel=await Module({locateFile:()=>wasmURL.protocol==='file:'?decodeURIComponent(wasmURL.pathname):wasmURL.href});
 kernel.setup();
@@ -64,15 +65,25 @@ export function buildAssembly(locations){
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,16,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
   let bottom=union([slab(110,110,8,4,-1),ring(103.4,100.2,5.7,1.7,2.9),...locations.map(k=>move(pod,k.x,k.y))]);
-  bottom=cut(bottom,union([...screws,...nuts]));
+  // Open-front cradle supports the board edges and leaves an underside relief.
+  const [bx,by,bz]=xiaoPosition;
+  let cradle=cut(box(21,22,3.2,bx,by+.6,3),box(18.4,21.6,3,bx,by,5));
+  cradle=cut(cradle,box(14,17,3,bx,by,3.8));
+  // Side windows expose solder pads; low rails still locate the PCB edge.
+  cradle=cut(cradle,union([-1,1].map(d=>box(3,19,2,bx+d*9.5,by,5.8))));
+  const usbOpening=box(20,10,5.3,bx,-54,4.7);
+  const boardPassage=box(18.4,8,1.4,bx,-53,4.8);
+  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening,boardPassage]));
   // The frame's solid pillars bridge the two plates; all four holes are coaxial.
   const pillars=screwCenters.map(([x,y])=>union([cylinder(4.5,7,x,y,3),box(10,6,7,Math.sign(x)*48,y,3)]));
-  const wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,
+  let wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,
    // Relief pockets in the pillars accept both continuous locating lips.
    ring(103.9,99.7,5.95,1.9,2.9),ring(103.9,99.7,5.95,1.9,8.2),...screwCenters.map(([x,y])=>cylinder(4.8,1.3,x,y,8.8))]));
   const switchCuts=locations.map(k=>box(14.2,14.2,5,k.x,k.y,8));
   let top=union([slab(110,110,8,1.5,10),ring(103.4,100.2,5.7,1.7,8.4),...screwCenters.map(([x,y])=>cylinder(4.5,2.5,x,y,9))]);
   top=cut(top,union([...screws,...switchCuts,cylinder(9.8,5,-30,30,8),cylinder(9,5,30,30,8)]));
+  wall=cut(wall,union([usbOpening,boardPassage,box(21.6,6,3.5,bx,-53,3)]));
+  top=cut(top,usbOpening);
   // Hardware is shown but never exported as printable plastic.
   const bolts=union(screwCenters.map(([x,y])=>union([cylinder(1.5,12,x,y,-.5),cut(cylinder(2.75,3,x,y,11.5),cylinder(1.3,1.8,x,y,13,6))])));
   const metalNuts=union(screwCenters.map(([x,y])=>cut(cylinder(5.5/Math.sqrt(3),2.4,x,y,-.9,6),cylinder(1.5,3,x,y,-1.1))));
@@ -84,6 +95,7 @@ export function buildAssembly(locations){
   const overlap=(a,b)=>{const i=keep(a.intersect(b));return i.volume();};
   result.validation={bottomComponents:bottom.decompose().map(keep).length,wallComponents:wall.decompose().map(keep).length,
    topComponents:top.decompose().map(keep).length,
+   usbPassageOverlap:overlap(union([bottom,wall,top]),usbOpening),
    shellOverlap:overlap(bottom,wall)+overlap(bottom,top)+overlap(wall,top),
    socketHolderOverlap:overlap(bottom,union(socketSolids)),
    upwardRetentionVolume:overlap(bottom,move(union(socketSolids),0,0,.6)),
