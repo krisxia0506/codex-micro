@@ -45,7 +45,7 @@ function syncGroups(){
 $('#count').textContent=`${parts.length-partGroups.reduce((n,g)=>n+g.members.length-1,0)} 项`;
 $('#count').title=`共 ${parts.length} 个零件，键帽与轴体分别合并为分组`;
 for(const part of parts){
- const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); decorate(mesh,part);
+ const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); mesh.rotation.z=part.rotationZ??0; decorate(mesh,part);
  if(/^key-[1-6]$/.test(part.id)){mesh.material.transparent=true;mesh.material.opacity=.88;mesh.material.roughness=.22;mesh.material.emissive.set(part.color);mesh.material.emissiveIntensity=.18;}
 
  if(!part.printable && !part.id.startsWith('switch-') && !part.id.startsWith('case-')) {

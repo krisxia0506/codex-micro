@@ -104,7 +104,8 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
   const shell=keep(k.Manifold.union(shells));
   // Conservative envelope includes PCB and all displayed chips / USB connector.
   const board=parts.find(p=>p.id==='xiao'),[bx,by,bz]=board.position;
-  const envelope=keep(keep(k.Manifold.cube([17.8,22.2,3.5])).translate([bx-8.9,by-10.5,bz]));
+  const localEnvelope=keep(keep(k.Manifold.cube([17.8,22.2,3.5])).translate([-8.9,-10.5,0]));
+  const envelope=keep(keep(localEnvelope.rotate([0,0,(board.rotationZ??0)*180/Math.PI])).translate([bx,by,bz]));
   assert.ok(Math.abs(keep(envelope.intersect(shell)).volume())<1e-6,'XIAO envelope must clear shell and socket holders');
   for(const part of parts.filter(p=>p.id.startsWith('switch-')||['sockets','encoder','stick-module','case-screws','case-nuts'].includes(p.id))){
    const source=part.geometry.index?part.geometry.toNonIndexed():part.geometry.clone();
@@ -174,4 +175,18 @@ test('socket hooks have solid sloping rear buttresses and open side relief slots
   for(const dx of [-1.65,1.65])assert.ok(top(x+dx,boundary-direction*.7)<=3.8001,'buttress must not fill side relief slots');
  }
  geometry.dispose();material.dispose();
+});
+
+
+test('XIAO USB faces outward and wire endpoints follow rotated pads',async()=>{
+ const {xiaoPosition,xiaoRotation,xiaoWorldPoint,wireGeometry}=await import('../../web/harness.js');
+ const board=parts.find(p=>p.id==='xiao');
+ assert.equal(board.rotationZ,xiaoRotation);
+ const port=xiaoWorldPoint(0,11.6,2.25);
+ assert.ok(port[1]<xiaoPosition[1]);assert.ok(Math.abs(port[0]-xiaoPosition[0])<1e-6);
+ for(let i=0;i<13;i++)for(let side=0;side<2;side++){
+  const geometry=wireGeometry(0,0,i,side),end=geometry.parameters.path.getPoint(1);
+  const expected=new Vector3(...xiaoWorldPoint(side===0?-8.3:8.3,-7.6+(i%7)*2.54,1.05));
+  assert.ok(end.distanceTo(expected)<1e-6);geometry.dispose();
+ }
 });

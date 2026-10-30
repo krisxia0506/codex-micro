@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { xiaoPosition } from './harness.js';
+import { xiaoPosition, xiaoRotation } from './harness.js';
 import { buildAssembly, assemblySpec, hollowKeycap, keycapSpec } from './assembly.js';
 export { assemblySpec, keycapSpec };
 export let assemblyValidation;
@@ -82,7 +82,8 @@ export function createParts() {
     add(id,name,geometry,position,color,2,description+' 展示示意，不导出 STL。');
     parts.at(-1).printable=false;
   };
-  electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[...xiaoPosition],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；移至左下无轴体空位（中心 -33, -32 mm）；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
+  electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[...xiaoPosition],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；移至左下无轴体空位（中心 -33, -32 mm）；USB-C 已朝向外壳 -Y 外侧；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
+  parts.at(-1).rotationZ=xiaoRotation;
   switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8.5],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-30,30,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[30,30,7],'#373c43','位于右上摇杆帽下方。');
