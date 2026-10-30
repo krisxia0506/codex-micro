@@ -16,3 +16,10 @@ has been obtained. See docs/research/assets/README.md for source URLs.
 OpenAI, Work Louder and Codex Micro names and marks belong to their respective
 owners. Their appearance in this repository does not imply endorsement,
 affiliation or a trademark license.
+
+The model workbench bundles Manifold 3.5.4 (https://github.com/elalish/manifold),
+licensed under Apache-2.0. Its license is distributed at
+public/licenses/manifold-3d.txt (licenses/manifold-3d.txt in the built website).
+Kailh PG151101S11 dimensions are independently reconstructed from the
+manufacturer drawing cited in docs/model-workbench.md; no manufacturer CAD or
+PDF is redistributed in this project.
