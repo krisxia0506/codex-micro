@@ -22,7 +22,7 @@ const parts=createParts(); const meshes=[]; let keyInspection=null; let selected
 const keycaps=parts.filter(part=>part.id.startsWith('key-'));
 const partGroups=[
  {id:'keycap',name:'键帽组',members:parts.filter(part=>keycaps.includes(part)||['knob','joystick'].includes(part.id))},
- {id:'switch',name:'轴体组',members:parts.filter(part=>part.id.startsWith('switch-'))},
+ {id:'switch',name:'轴体组',members:parts.filter(part=>part.id.startsWith('switch-')||['encoder','stick-module'].includes(part.id))},
 ].map(group=>{
  const element=document.createElement('div');element.className='task-group';
  element.innerHTML=`<div class="part-row task-group-header"><input type="checkbox" checked aria-label="显示${group.name}"><button aria-expanded="false" aria-controls="${group.id}-children"><span class="group-arrow">▸</span>${group.name}<small>${group.members.length} 个</small></button></div><div id="${group.id}-children" class="task-group-children" hidden></div>`;
