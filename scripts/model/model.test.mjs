@@ -150,3 +150,18 @@ test('socket hook undersides rise at 45 degrees with a substantial nose',()=>{
  }
  geometry.dispose();material.dispose();
 });
+
+
+test('socket hooks have solid sloping rear buttresses and open side relief slots',()=>{
+ const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
+ const mesh=new Mesh(geometry,material);
+ const top=(x,y)=>new Raycaster(new Vector3(x,y,10),new Vector3(0,0,-1)).intersectObject(mesh)[0]?.point.z;
+ for(const [x,boundary,direction] of [[-3.8,-.61,-1],[1,-7,1]]){
+  for(const rear of [.8,1.1,1.5]){
+   const expected=8.4-(rear-.65)*1.4/1.35;
+   assert.ok(Math.abs(top(x,boundary-direction*rear)-expected)<1e-4,'rear must form a continuous slope down to rim');
+  }
+  for(const dx of [-1.65,1.65])assert.ok(top(x+dx,boundary-direction*.7)<=3.8001,'buttress must not fill side relief slots');
+ }
+ geometry.dispose();material.dispose();
+});

@@ -53,7 +53,9 @@ export function buildAssembly(locations){
   // Start above the socket roof (6.85), leaving the nominal seated pocket clear.
   // A 0.70 mm nose replaces the old 0.50 mm wedge with its near-zero thin edge.
   const hook=(cx,boundary,direction)=>{
-   const yz=[[-.65,6.7],[0,6.9],[.45,7.35],[.45,8.05],[.10,8.4],[-.65,8.4]]
+   // Full-depth buttress: the outer back slopes from the head down to the pod rim.
+   // Keep the two side relief slots open; a stiffer tongue requires physical insertion testing.
+   const yz=[[-2,3.8],[0,3.8],[0,6.9],[.45,7.35],[.45,8.05],[.10,8.4],[-.65,8.4],[-2,7]]
     .map(([inset,z])=>[boundary+direction*inset,z]);
    if(direction<0)yz.reverse();
    return move(keep(keep(keep(new C([yz])).extrude(2.6)).rotate([90,0,90])),cx-1.3,0,0);
