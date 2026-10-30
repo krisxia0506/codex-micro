@@ -105,7 +105,13 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
   const shell=keep(k.Manifold.union(shells));
   // Conservative envelope includes PCB and all displayed chips / USB connector.
   const board=parts.find(p=>p.id==='xiao'),[bx,by,bz]=board.position;
-  const localEnvelope=keep(keep(k.Manifold.cube([17.8,22.2,3.5])).translate([-8.9,-10.5,0]));
+  // Separate PCB shoulders from the narrower USB overhang so real stops can occupy its sides.
+  const envelopeBox=(w,d,h,x,y,z)=>keep(keep(k.Manifold.cube([w,d,h])).translate([x,y,z]));
+  const localEnvelope=keep(k.Manifold.union([
+   envelopeBox(17.8,21,1,-8.9,-10.5,0),
+   envelopeBox(17.8,19.5,2.5,-8.9,-10.5,1),
+   envelopeBox(8,7.7,2.5,-4,4,1),
+  ]));
   const envelope=keep(keep(localEnvelope.rotate([0,0,(board.rotationZ??0)*180/Math.PI])).translate([bx,by,bz]));
   assert.ok(Math.abs(keep(envelope.intersect(shell)).volume())<1e-6,'XIAO envelope must clear shell and socket holders');
   for(const part of parts.filter(p=>p.id.startsWith('switch-')||['sockets','encoder','stick-module','case-screws','case-nuts'].includes(p.id))){
@@ -201,11 +207,25 @@ test('XIAO cradle supports the board edges and USB passage opens outside',async(
  assert.ok(Math.abs(height(8)-5)<1e-4,'PCB edge support height');
  assert.ok(Math.abs(height(0)-3.8)<1e-4,'underside relief');
  assert.ok(Math.abs(assemblyValidation.usbPassageOverlap)<1e-6);
- assert.ok(xiaoWorldPoint(0,11.6,2.25)[1]<-55,'port face reaches exterior');
+ assert.ok(xiaoWorldPoint(0,11.6,2.25)[1]<=-54.4,'USB face must be accessible within 0.6 mm of exterior');
  for(const p of parts.filter(p=>['bottom','wall','top'].includes(p.id))){
   const mesh=new Mesh(p.geometry,material);mesh.position.fromArray(p.position);mesh.updateMatrixWorld();
   const ray=new Raycaster(new Vector3(x,-60,7.25),new Vector3(0,1,0),0,11);
   assert.equal(ray.intersectObject(mesh).length,0,'USB approach must be clear through assembled shell');
  }
+ material.dispose();
+});
+
+
+test('exterior stops catch the PCB on outward motion while keeping the USB gap open',()=>{
+ assert.ok(Math.abs(assemblyValidation.boardSeatedOverlap)<1e-6);
+ assert.ok(assemblyValidation.boardOutwardStopOverlap>1,'0.6 mm outward movement must meet both stops');
+ const material=new MeshBasicMaterial({side:DoubleSide});
+ const mesh=new Mesh(parts.find(p=>p.id==='bottom').geometry,material);
+ for(const x of [-37.5,-22.5]){
+  const hits=new Raycaster(new Vector3(x,-60,5.5),new Vector3(0,1,0),0,7).intersectObject(mesh);
+  assert.ok(hits.length>0,'exterior wall must block PCB shoulder');
+ }
+ assert.equal(new Raycaster(new Vector3(-30,-60,7.25),new Vector3(0,1,0),0,8).intersectObject(mesh).length,0);
  material.dispose();
 });

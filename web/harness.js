@@ -1,6 +1,6 @@
 import { CurvePath, LineCurve3, QuadraticBezierCurve3, TubeGeometry, Vector3 } from 'three';
 
-export const xiaoPosition=[-30,-43.5,5];
+export const xiaoPosition=[-30,-43,5];
 export const xiaoRotation=Math.PI; // USB-C local +Y faces the enclosure's -Y edge.
 export function xiaoWorldPoint(x,y,z){
  const c=Math.cos(xiaoRotation),s=Math.sin(xiaoRotation);
