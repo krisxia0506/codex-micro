@@ -19,9 +19,9 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1.1; floor.receiveShadow=true; scene.add(floor);
 const parts=createParts(); const meshes=[]; let keyInspection=null; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
-const taskKeys=parts.filter(part=>/^key-[1-6]$/.test(part.id));
+const keycaps=parts.filter(part=>part.id.startsWith('key-'));
 const partGroups=[
- {id:'task-key',name:'任务键组',members:taskKeys},
+ {id:'keycap',name:'键帽组',members:keycaps},
  {id:'switch',name:'轴体组',members:parts.filter(part=>part.id.startsWith('switch-'))},
 ].map(group=>{
  const element=document.createElement('div');element.className='task-group';
@@ -43,7 +43,7 @@ function syncGroups(){
  }
 }
 $('#count').textContent=`${parts.length-partGroups.reduce((n,g)=>n+g.members.length-1,0)} 项`;
-$('#count').title=`共 ${parts.length} 个零件，任务键与轴体分别合并为分组`;
+$('#count').title=`共 ${parts.length} 个零件，键帽与轴体分别合并为分组`;
 for(const part of parts){
  const mesh=new THREE.Mesh(part.geometry,new THREE.MeshStandardMaterial({color:part.color,roughness:.48,metalness:.08})); mesh.position.fromArray(part.position); decorate(mesh,part);
  if(/^key-[1-6]$/.test(part.id)){mesh.material.transparent=true;mesh.material.opacity=.88;mesh.material.roughness=.22;mesh.material.emissive.set(part.color);mesh.material.emissiveIntensity=.18;}
@@ -75,7 +75,7 @@ $('#key-bottom').onclick=()=>{
  if(keyInspection){leaveKeyInspection();reset();return;}
  keyInspection=new Map(meshes.map(m=>[m.userData.part.id,m.visible]));
  $('#key-bottom').textContent='返回装配视图';
- select(selected.id.startsWith('key-')?selected:taskKeys[0]);
+ select(selected.id.startsWith('key-')?selected:keycaps[0]);
 };
 function select(part){ if(keyInspection){if(part.id.startsWith('key-'))aimKeyBottom(part);else leaveKeyInspection();} selected=part; partGroups.find(g=>g.members.includes(part))?.expand(true);syncGroups(); $('#part-name').textContent=part.name; $('#description').textContent=part.description; $('#download').disabled=!part.printable; $('#download').textContent=part.printable?'↓ 下载该零件 STL':(part.id.startsWith('case-')?'标准紧固件 · 不提供打印文件':'电子元件占位 · 不提供打印文件'); for(const m of meshes){const active=m.userData.part===part; m.material.emissive.set(active?'#665574':(/^key-[1-6]$/.test(m.userData.part.id)?m.userData.part.color:'#000000')); m.userData.part.row.classList.toggle('selected',active);} } select(selected);
 $('#explode').oninput=e=>{leaveKeyInspection();const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
