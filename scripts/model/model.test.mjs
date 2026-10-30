@@ -102,6 +102,16 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
    const s=solid(a,Array.from({length:a.length/3},(_,i)=>i));g.dispose();return s;
   });
   const shell=keep(k.Manifold.union(shells));
+  // Conservative envelope includes PCB and all displayed chips / USB connector.
+  const board=parts.find(p=>p.id==='xiao'),[bx,by,bz]=board.position;
+  const envelope=keep(keep(k.Manifold.cube([17.8,22.2,3.5])).translate([bx-8.9,by-10.5,bz]));
+  assert.ok(Math.abs(keep(envelope.intersect(shell)).volume())<1e-6,'XIAO envelope must clear shell and socket holders');
+  for(const part of parts.filter(p=>p.id.startsWith('switch-')||['sockets','encoder','stick-module','case-screws','case-nuts'].includes(p.id))){
+   const source=part.geometry.index?part.geometry.toNonIndexed():part.geometry.clone();
+   source.translate(...part.position);const a=source.attributes.position.array;
+   const other=solid(a,Array.from({length:a.length/3},(_,i)=>i));source.dispose();
+   assert.ok(Math.abs(keep(envelope.intersect(other)).volume())<1e-6,`XIAO must clear ${part.id}`);
+  }
   for(const [index,[x,y]] of parts.find(p=>p.id==='sockets').socketPositions.entries())for(let side=0;side<2;side++){
    const g=wireGeometry(x,y,index,side),indices=[...g.index.array];
    const {radialSegments:r,tubularSegments:t}=g.parameters,last=t*(r+1);
