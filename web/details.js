@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { keycapSpec } from './assembly.js';
+import { capsule, usbSpec, usbShellGeometry } from './usb.js';
 
 // Render-only details: markings and commercial component features are not STL parts.
 export function decorate(mesh, part) {
@@ -66,8 +67,10 @@ export function decorate(mesh, part) {
   }
   if(part.id==='xiao') {
     // Features communicate the module's architecture, not exact component placement.
-    box(8,7,2.5,'#aeb3bd',0,8,2.25,.8);
-    box(6.6,.2,1.5,'#171d24',0,11.6,2.25);
+    add(usbShellGeometry(),'#aeb3bd',[0,0,0],.8);
+    const cavity=new THREE.ShapeGeometry(capsule(usbSpec.mouthWidth,usbSpec.mouthHeight),32);
+    cavity.rotateX(-Math.PI/2);add(cavity,'#171d24',[0,10.7,2.25]);
+    box(6,.6,.65,'#303039',0,11,2.25);
     box(7,7,1.4,'#9ca4a9',0,-1,1.7,.8);
     text('nRF52',6,1.6,0,-1,2.43,'#263635');
     box(3,2.5,1,'#bda266',-4,-7,1.5,.5);

@@ -113,6 +113,11 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
    envelopeBox(8,7.7,2.5,-4,4,1),
   ]));
   const envelope=keep(keep(localEnvelope.rotate([0,0,(board.rotationZ??0)*180/Math.PI])).translate([bx,by,bz]));
+  const {usbShellGeometry}=await import('../../web/usb.js');
+  const usbGeometry=usbShellGeometry().rotateZ(board.rotationZ).translate(bx,by,bz);
+  const ua=usbGeometry.attributes.position.array;
+  const usbSolid=solid(ua,Array.from({length:ua.length/3},(_,i)=>i));
+  assert.ok(Math.abs(keep(usbSolid.intersect(shell)).volume())<1e-6,'rounded USB shell clears opening');usbGeometry.dispose();
   assert.ok(Math.abs(keep(envelope.intersect(shell)).volume())<1e-6,'XIAO envelope must clear shell and socket holders');
   for(const part of parts.filter(p=>p.id.startsWith('switch-')||['sockets','encoder','stick-module','case-screws','case-nuts'].includes(p.id))){
    const source=part.geometry.index?part.geometry.toNonIndexed():part.geometry.clone();
@@ -237,6 +242,6 @@ test('midframe has a bounded Type-C window with wall on all four sides',()=>{
  const mesh=new Mesh(part.geometry,material);mesh.position.fromArray(part.position);mesh.updateMatrixWorld();
  const hits=(x,z)=>new Raycaster(new Vector3(x,-60,z),new Vector3(0,1,0),0,6).intersectObject(mesh);
  assert.equal(hits(-30,7.5).length,0);
- for(const [x,z] of [[-35.5,7.5],[-24.5,7.5],[-30,5.2],[-30,9.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
+ for(const [x,z] of [[-35.5,7.5],[-24.5,7.5],[-30,5.1],[-30,9.6],[-34.8,8.9],[-25.2,5.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
  material.dispose();
 });

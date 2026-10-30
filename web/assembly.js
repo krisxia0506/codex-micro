@@ -1,6 +1,7 @@
 import Module from 'manifold-3d';
 import * as THREE from 'three';
 import { xiaoPosition } from './harness.js';
+import { usbSpec } from './usb.js';
 const wasmURL=new URL('../node_modules/manifold-3d/manifold.wasm',import.meta.url);
 const kernel=await Module({locateFile:()=>wasmURL.protocol==='file:'?decodeURIComponent(wasmURL.pathname):wasmURL.href});
 kernel.setup();
@@ -72,7 +73,11 @@ export function buildAssembly(locations){
   // Side windows expose solder pads; low rails still locate the PCB edge.
   cradle=cut(cradle,union([-1,1].map(d=>box(3,19,2,bx+d*9.5,by,5.8))));
   // Only a Type-C-sized window penetrates the outside wall.
-  const usbOpening=box(10,10,3.5,bx,-54,5.75);
+  const radius=usbSpec.panelHeight/2;
+  const halfStraight=usbSpec.panelWidth/2-radius;
+  const usbProfile=keep(C.union([keep(C.square([2*halfStraight,2*radius],true)),
+   ...[-1,1].map(d=>keep(keep(C.circle(radius,64)).translate([d*halfStraight,0])))]));
+  const usbOpening=move(keep(keep(usbProfile.extrude(10)).rotate([90,0,0])),bx,-49,usbSpec.centerZ);
   // Internal recess stops 1.2 mm short of the exterior, retaining the PCB shoulders.
   const boardRecess=box(21.6,3.8,5.8,bx,-51.9,3);
   bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening]));
