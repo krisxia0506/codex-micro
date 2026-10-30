@@ -221,11 +221,22 @@ test('exterior stops catch the PCB on outward motion while keeping the USB gap o
  assert.ok(Math.abs(assemblyValidation.boardSeatedOverlap)<1e-6);
  assert.ok(assemblyValidation.boardOutwardStopOverlap>1,'0.6 mm outward movement must meet both stops');
  const material=new MeshBasicMaterial({side:DoubleSide});
- const mesh=new Mesh(parts.find(p=>p.id==='bottom').geometry,material);
+ const wall=parts.find(p=>p.id==='wall');
+ const mesh=new Mesh(wall.geometry,material);mesh.position.fromArray(wall.position);mesh.updateMatrixWorld();
  for(const x of [-37.5,-22.5]){
   const hits=new Raycaster(new Vector3(x,-60,5.5),new Vector3(0,1,0),0,7).intersectObject(mesh);
   assert.ok(hits.length>0,'exterior wall must block PCB shoulder');
  }
  assert.equal(new Raycaster(new Vector3(-30,-60,7.25),new Vector3(0,1,0),0,8).intersectObject(mesh).length,0);
+ material.dispose();
+});
+
+
+test('midframe has a bounded Type-C window with wall on all four sides',()=>{
+ const part=parts.find(p=>p.id==='wall'),material=new MeshBasicMaterial({side:DoubleSide});
+ const mesh=new Mesh(part.geometry,material);mesh.position.fromArray(part.position);mesh.updateMatrixWorld();
+ const hits=(x,z)=>new Raycaster(new Vector3(x,-60,z),new Vector3(0,1,0),0,6).intersectObject(mesh);
+ assert.equal(hits(-30,7.5).length,0);
+ for(const [x,z] of [[-35.5,7.5],[-24.5,7.5],[-30,5.2],[-30,9.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
  material.dispose();
 });

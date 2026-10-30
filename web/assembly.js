@@ -71,13 +71,11 @@ export function buildAssembly(locations){
   cradle=cut(cradle,box(14,17,3,bx,by,3.8));
   // Side windows expose solder pads; low rails still locate the PCB edge.
   cradle=cut(cradle,union([-1,1].map(d=>box(3,19,2,bx+d*9.5,by,5.8))));
-  const usbOpening=box(20,10,5.3,bx,-54,4.7);
-  const boardPassage=box(18.4,8,1.4,bx,-53,4.8);
-  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening,boardPassage]));
-  // Two 1.2 mm thick exterior walls catch the PCB shoulders during unplugging.
-  // The central 11 mm gap leaves the USB shell accessible from outside.
-  const frontStops=union([-1,1].map(d=>box(4,1.2,4,bx+d*7.5,-54.4,3)));
-  bottom=union([bottom,frontStops]);
+  // Only a Type-C-sized window penetrates the outside wall.
+  const usbOpening=box(10,10,3.5,bx,-54,5.75);
+  // Internal recess stops 1.2 mm short of the exterior, retaining the PCB shoulders.
+  const boardRecess=box(21.6,3.8,5.8,bx,-51.9,3);
+  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening]));
   // The frame's solid pillars bridge the two plates; all four holes are coaxial.
   const pillars=screwCenters.map(([x,y])=>union([cylinder(4.5,7,x,y,3),box(10,6,7,Math.sign(x)*48,y,3)]));
   let wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,
@@ -86,8 +84,8 @@ export function buildAssembly(locations){
   const switchCuts=locations.map(k=>box(14.2,14.2,5,k.x,k.y,8));
   let top=union([slab(110,110,8,1.5,10),ring(103.4,100.2,5.7,1.7,8.4),...screwCenters.map(([x,y])=>cylinder(4.5,2.5,x,y,9))]);
   top=cut(top,union([...screws,...switchCuts,cylinder(9.8,5,-30,30,8),cylinder(9,5,30,30,8)]));
-  wall=cut(wall,union([usbOpening,boardPassage,box(21.6,6,3.5,bx,-53,3)]));
-  top=cut(top,usbOpening);
+  wall=cut(wall,union([usbOpening,boardRecess]));
+  top=cut(top,union([usbOpening,boardRecess]));
   // Hardware is shown but never exported as printable plastic.
   const bolts=union(screwCenters.map(([x,y])=>union([cylinder(1.5,12,x,y,-.5),cut(cylinder(2.75,3,x,y,11.5),cylinder(1.3,1.8,x,y,13,6))])));
   const metalNuts=union(screwCenters.map(([x,y])=>cut(cylinder(5.5/Math.sqrt(3),2.4,x,y,-.9,6),cylinder(1.5,3,x,y,-1.1))));
@@ -99,9 +97,9 @@ export function buildAssembly(locations){
   const overlap=(a,b)=>{const i=keep(a.intersect(b));return i.volume();};
   result.validation={bottomComponents:bottom.decompose().map(keep).length,wallComponents:wall.decompose().map(keep).length,
    topComponents:top.decompose().map(keep).length,
-   usbPassageOverlap:overlap(union([bottom,wall,top]),box(11,10,5.3,bx,-54,4.7)),
-   boardOutwardStopOverlap:overlap(bottom,box(17.8,21,1,bx,by-.6,bz)),
-   boardSeatedOverlap:overlap(bottom,box(17.8,21,1,bx,by,bz)),
+   usbPassageOverlap:overlap(union([bottom,wall,top]),usbOpening),
+   boardOutwardStopOverlap:overlap(union([bottom,wall,top]),box(17.8,21,1,bx,by-.6,bz)),
+   boardSeatedOverlap:overlap(union([bottom,wall,top]),box(17.8,21,1,bx,by,bz)),
    shellOverlap:overlap(bottom,wall)+overlap(bottom,top)+overlap(wall,top),
    socketHolderOverlap:overlap(bottom,union(socketSolids)),
    upwardRetentionVolume:overlap(bottom,move(union(socketSolids),0,0,.6)),
