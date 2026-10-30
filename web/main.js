@@ -21,7 +21,7 @@ const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStan
 const parts=createParts(); const meshes=[]; let keyInspection=null; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
 const keycaps=parts.filter(part=>part.id.startsWith('key-'));
 const partGroups=[
- {id:'keycap',name:'键帽组',members:keycaps},
+ {id:'keycap',name:'键帽组',members:parts.filter(part=>keycaps.includes(part)||['knob','joystick'].includes(part.id))},
  {id:'switch',name:'轴体组',members:parts.filter(part=>part.id.startsWith('switch-'))},
 ].map(group=>{
  const element=document.createElement('div');element.className='task-group';
