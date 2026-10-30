@@ -135,3 +135,18 @@ test('MX holes open from underneath and stop below the keycap roof',()=>{
  }
  material.dispose();
 });
+
+
+test('socket hook undersides rise at 45 degrees with a substantial nose',()=>{
+ const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
+ const mesh=new Mesh(geometry,material);
+ for(const [x,boundary,direction] of [[-3.8,-.61,-1],[1,-7,1]]){
+  for(const inset of [.1,.3,.44]){
+   const hits=new Raycaster(new Vector3(x,boundary+direction*inset,6.86),new Vector3(0,0,1)).intersectObject(mesh);
+   assert.ok(Math.abs(hits[0]?.point.z-(6.9+inset))<1e-4,'underside must ramp upward without a horizontal overhang');
+   const top=new Raycaster(new Vector3(x,boundary+direction*inset,10),new Vector3(0,0,-1)).intersectObject(mesh)[0]?.point.z;
+   assert.ok(top-hits[0].point.z>=.7,'hook nose must retain at least 0.7 mm thickness');
+  }
+ }
+ geometry.dispose();material.dispose();
+});

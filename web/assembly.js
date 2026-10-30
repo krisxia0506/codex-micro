@@ -49,14 +49,16 @@ export function buildAssembly(locations){
    for(const dx of [-1.65,1.65])relief.push(box(.65,3.1,4,cx+dx,cy,3.8));
   }
   pod=cut(pod,union(relief));
-  // Hooks overlap only the body shoulder, leaving both pin-entry collars clear.
-  const hooks=[box(2.6,.7,.5,-3.8,-.72,6.95),box(2.6,.7,.5,1,-6.91,6.95)];
-  pod=union([pod,...hooks]);
-  // Chamfer the insertion side of each hook, retaining a flat lower shoulder.
-  // The sloped wedges leave 0.25 mm of positive retention at the body edge.
-  const wedge=keep(keep(new C([[[-.45,0],[.45,0],[.45,.45]]])).extrude(2.6));
-  const chamfers=[move(keep(wedge.rotate([90,0,90])),-5.1,-.46,7.05),move(keep(wedge.rotate([90,0,-90])),2.3,-7.15,7.05)];
-  pod=cut(pod,union(chamfers));
+  // PLA / 0.4 mm nozzle trial: grow the hook inward on a 45-degree underside.
+  // Start above the socket roof (6.85), leaving the nominal seated pocket clear.
+  // A 0.70 mm nose replaces the old 0.50 mm wedge with its near-zero thin edge.
+  const hook=(cx,boundary,direction)=>{
+   const yz=[[-.65,6.7],[0,6.9],[.45,7.35],[.45,8.05],[.10,8.4],[-.65,8.4]]
+    .map(([inset,z])=>[boundary+direction*inset,z]);
+   if(direction<0)yz.reverse();
+   return move(keep(keep(keep(new C([yz])).extrude(2.6)).rotate([90,0,90])),cx-1.3,0,0);
+  };
+  pod=union([pod,hook(-3.8,-.61,-1),hook(1,-7,1)]);
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,16,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
   let bottom=union([slab(110,110,8,4,-1),ring(103.4,100.2,5.7,1.7,2.9),...locations.map(k=>move(pod,k.x,k.y))]);

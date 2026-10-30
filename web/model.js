@@ -62,7 +62,7 @@ export function createParts() {
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
   const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；13 个一体承托槽、弹性限位舌与防脱肩；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
+  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；13 个一体承托槽、弹性限位舌与防脱肩；v0.8 卡钩含 45° 下沿和 0.70 mm 厚钩头，针对 PLA / 0.4 mm 喷嘴试印；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 高中框；四角贯穿螺丝支柱，上下端接纳定位凸沿，单侧 0.30 mm 配合间隙。凸沿负责定位，M3 螺丝负责锁紧。');
   add('top','轴体定位板 · 下凸沿',assembly.top,[0,0,10],'#c5cdd0',2.5,'1.5 mm 轴体板，四角向下局部加厚至 2.5 mm；下侧一圈 1.6 mm 凸沿；四角直径 3.4 mm 通孔。14.2 mm 轴孔为打印试配值，卡爪配合仍待试装。');
   keys.forEach((k,i)=>{
