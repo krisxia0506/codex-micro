@@ -6,6 +6,5 @@ export const mxSpec={
  centerHole:4.4,guideHole:2.1,contactHole:3.2,
  postDiameter:3.9,guideDiameter:1.6,pinLength:3.3,
  carrierBottom:10,carrierTop:11.5,socketBottom:8.15,
- frameBottom:15,frameTop:16.5,plateOpening:14.2,
 };
 export const socketTerminals=[[-7.15,2.54],[6,5.08]];

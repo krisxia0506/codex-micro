@@ -1,8 +1,8 @@
 import { socketTerminals } from './mx.js';
 import { CurvePath, LineCurve3, QuadraticBezierCurve3, TubeGeometry, Vector3 } from 'three';
 
-export const xiaoPosition=[-30,-43,5];
-export const xiaoRotation=Math.PI; // USB-C local +Y faces the enclosure's -Y edge.
+export const xiaoPosition=[0,53,5];
+export const xiaoRotation=0; // USB-C local +Y faces the top (+Y) edge.
 export function xiaoWorldPoint(x,y,z){
  const c=Math.cos(xiaoRotation),s=Math.sin(xiaoRotation);
  return [xiaoPosition[0]+x*c-y*s,xiaoPosition[1]+x*s+y*c,xiaoPosition[2]+z];
@@ -16,8 +16,7 @@ export function wireGeometry(x,y,index,side){
  const routeY=Math.max(y-10,-40.2); // Leave clearance around the lower M3 pillars.
  const points=[[x+terminalX,y+terminalY,8.9],[x+direction*9.1,y+terminalY,8.9],
   [x+direction*9.1,routeY,7.5],[direction*(39+index*.7),routeY,7.5],
-  [direction*(39+index*.7),35,5.75],[-47.5,35,5.75],
-  [-47.5,-35,7.5],[endpoint[0],-35,7.5],[endpoint[0],endY,7.5],endpoint].map(p=>new Vector3(...p));
+  [direction*(39+index*.7),41,5.75],[endpoint[0],41,7.5],[endpoint[0],endY,7.5],endpoint].map(p=>new Vector3(...p));
  // Rounded polyline stays within the routing points' convex hull. An interpolating
  // spline can overshoot the side corridor and pierce the enclosure wall.
  const curve=new CurvePath();let previous=points[0];

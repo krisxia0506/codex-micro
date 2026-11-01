@@ -10,8 +10,7 @@ test('electronic placeholders cannot be exported',()=>{
  assert.equal(parts.filter(p=>p.printable).length,17);
  for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
 });
-const bExtras=createParts('framed').filter(p=>['switch-frame','frame-washers'].includes(p.id));
-for(const part of [...parts.filter(p=>p.printable),...bExtras,{id:"socket-fit-coupon",geometry:socketFitCoupon()}]) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
+for(const part of [...parts.filter(p=>p.printable),{id:"socket-fit-coupon",geometry:socketFitCoupon()}]) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
  const geometry=printableGeometry(part);
  const data=new STLExporter().parse(new Mesh(geometry),{binary:true});
  const parsed=new STLLoader().parse(data.buffer); const a=parsed.getAttribute('position');
@@ -60,7 +59,7 @@ test('all handwires stay inside the enclosure cavity',async()=>{
   for(let i=0;i<vertices.count;i++){
    assert.ok(Math.abs(vertices.getX(i))<49,'wire crosses the side corridor');
    const vx=vertices.getX(i),vy=vertices.getY(i);
-   assert.ok(Math.abs(vy)<49||(vx>-40&&vx<-20&&vy>-52&&vy<0),'wire must remain in corridor or the recessed XIAO bay');
+   assert.ok((vy>-49&&vy<59)||(Math.abs(vx)<10&&vy>=59&&vy<62),'wire must remain in corridor or the recessed XIAO bay');
    assert.ok(vertices.getZ(i)>3&&vertices.getZ(i)<10,'wire crosses floor or plate');
   }
   geometry.dispose();
@@ -166,7 +165,7 @@ test('XIAO USB faces outward and wire endpoints follow rotated pads',async()=>{
  const board=parts.find(p=>p.id==='xiao');
  assert.equal(board.rotationZ,xiaoRotation);
  const port=xiaoWorldPoint(0,11.6,2.25);
- assert.ok(port[1]<xiaoPosition[1]);assert.ok(Math.abs(port[0]-xiaoPosition[0])<1e-6);
+ assert.ok(port[1]>xiaoPosition[1]);assert.ok(Math.abs(port[0]-xiaoPosition[0])<1e-6);
  for(let i=0;i<13;i++)for(let side=0;side<2;side++){
   const geometry=wireGeometry(0,0,i,side),end=geometry.parameters.path.getPoint(1);
   const expected=new Vector3(...xiaoWorldPoint(side===0?-8.3:8.3,-7.6+(i%7)*2.54,1.05));
@@ -183,10 +182,10 @@ test('XIAO cradle supports the board edges and USB passage opens outside',async(
  assert.ok(Math.abs(height(8)-5)<1e-4,'PCB edge support height');
  assert.ok(Math.abs(height(0)-3.8)<1e-4,'underside relief');
  assert.ok(Math.abs(assemblyValidation.usbPassageOverlap)<1e-6);
- assert.ok(xiaoWorldPoint(0,11.6,2.25)[1]<=-54.4,'USB face must be accessible within 0.6 mm of exterior');
+ assert.ok(xiaoWorldPoint(0,11.6,2.25)[1]>=64.4,'USB face must be accessible within 0.6 mm of exterior');
  for(const p of parts.filter(p=>['bottom','wall','top'].includes(p.id))){
   const mesh=new Mesh(p.geometry,material);mesh.position.fromArray(p.position);mesh.updateMatrixWorld();
-  const ray=new Raycaster(new Vector3(x,-60,7.25),new Vector3(0,1,0),0,11);
+  const ray=new Raycaster(new Vector3(x,70,7.25),new Vector3(0,-1,0),0,11);
   assert.equal(ray.intersectObject(mesh).length,0,'USB approach must be clear through assembled shell');
  }
  material.dispose();
@@ -199,11 +198,11 @@ test('exterior stops catch the PCB on outward motion while keeping the USB gap o
  const material=new MeshBasicMaterial({side:DoubleSide});
  const wall=parts.find(p=>p.id==='wall');
  const mesh=new Mesh(wall.geometry,material);mesh.position.fromArray(wall.position);mesh.updateMatrixWorld();
- for(const x of [-37.5,-22.5]){
-  const hits=new Raycaster(new Vector3(x,-60,5.5),new Vector3(0,1,0),0,7).intersectObject(mesh);
+ for(const x of [-7.5,7.5]){
+  const hits=new Raycaster(new Vector3(x,70,5.5),new Vector3(0,-1,0),0,7).intersectObject(mesh);
   assert.ok(hits.length>0,'exterior wall must block PCB shoulder');
  }
- assert.equal(new Raycaster(new Vector3(-30,-60,7.25),new Vector3(0,1,0),0,8).intersectObject(mesh).length,0);
+ assert.equal(new Raycaster(new Vector3(0,70,7.25),new Vector3(0,-1,0),0,8).intersectObject(mesh).length,0);
  material.dispose();
 });
 
@@ -211,9 +210,9 @@ test('exterior stops catch the PCB on outward motion while keeping the USB gap o
 test('midframe has a bounded Type-C window with wall on all four sides',()=>{
  const part=parts.find(p=>p.id==='wall'),material=new MeshBasicMaterial({side:DoubleSide});
  const mesh=new Mesh(part.geometry,material);mesh.position.fromArray(part.position);mesh.updateMatrixWorld();
- const hits=(x,z)=>new Raycaster(new Vector3(x,-60,z),new Vector3(0,1,0),0,6).intersectObject(mesh);
- assert.equal(hits(-30,7.5).length,0);
- for(const [x,z] of [[-35.5,7.5],[-24.5,7.5],[-30,5.1],[-30,9.6],[-34.8,8.9],[-25.2,5.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
+ const hits=(x,z)=>new Raycaster(new Vector3(x,70,z),new Vector3(0,-1,0),0,6).intersectObject(mesh);
+ assert.equal(hits(0,7.5).length,0);
+ for(const [x,z] of [[-5.5,7.5],[5.5,7.5],[0,5.1],[0,9.6],[-4.8,8.9],[4.8,5.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
  material.dispose();
 });
 
@@ -238,12 +237,11 @@ test('socket pin slots are open through both collars and bodies',()=>{
 
 
 
-for(const variant of ['bare','framed'])test(`${variant}: five-pin switch insertion, carrier, frame and fasteners clear`,()=>{
- const ps=createParts(variant),v={...assemblyValidation};
+test('five-pin switch insertion, carrier and fasteners clear',()=>{
+ const ps=createParts(),v={...assemblyValidation};
  for(const field of ['pinShellOverlap','pinSocketOverlap','insertionOverlap','switchBodyOverlap','socketHolderOverlap','shellOverlap','boltShellOverlap','nutShellOverlap'])
-  assert.ok(Math.abs(v[field])<1e-6,`${variant} ${field}: ${v[field]}`);
+  assert.ok(Math.abs(v[field])<1e-6,`${field}: ${v[field]}`);
  assert.equal(v.topComponents,1);assert.equal(v.bottomComponents,1);
- if(variant==='framed'){for(const p of ps.filter(p=>p.id.startsWith('key-')))assert.ok(p.position[2]-4>=16.5+.29,'full key travel clears frame');assert.equal(v.frameComponents,1);assert.ok(Math.abs(v.frameShellOverlap)<1e-6);}
  const top=ps.find(p=>p.id==='top'),mesh=new Mesh(top.geometry,new MeshBasicMaterial({side:DoubleSide}));mesh.position.fromArray(top.position);mesh.updateMatrixWorld();
  // Independent MX drawing landmarks, not taken from the hole generator.
  for(const [x,y] of ps.find(p=>p.id==='sockets').socketPositions)for(const [dx,dy] of [[0,0],[-5.08,0],[5.08,0],[-3.81,2.54],[2.54,5.08]]){
@@ -252,10 +250,11 @@ for(const variant of ['bare','framed'])test(`${variant}: five-pin switch inserti
  mesh.material.dispose();for(const p of ps)p.geometry.dispose();
 });
 
-test('B frame exports on its broad face rather than on four screw seats',()=>{
- const g=printableGeometry(bExtras.find(p=>p.id==='switch-frame')),a=g.attributes.position;let area=0;
- for(let i=0;i<a.count;i+=3){const v=[0,1,2].map(j=>new Vector3().fromBufferAttribute(a,i+j));
-  if(v.every(p=>Math.abs(p.z)<1e-5))area+=v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).length()/2;
- }
- assert.ok(area>7000);g.dispose();
+
+test('only A remains and the controller is top-centred',()=>{
+ assert.equal(parts.some(p=>['switch-frame','frame-washers'].includes(p.id)),false);
+ assert.deepEqual(parts.find(p=>p.id==='xiao').position,[0,53,5]);
+ const bottom=parts.find(p=>p.id==='bottom').geometry;bottom.computeBoundingBox();
+ assert.ok(Math.abs(bottom.boundingBox.max.y-65)<1e-5);
+ assert.ok(Math.abs(bottom.boundingBox.min.y+55)<1e-5);
 });
