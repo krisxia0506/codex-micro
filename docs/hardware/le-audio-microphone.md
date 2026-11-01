@@ -1,6 +1,36 @@
-# 待验证方案：LE Audio 麦克风与 BLE 九键控制
+# LE Audio 麦克风调研与 Mac 直连验证结果
 
-调研日期：2026-10-23。状态：**方案研究，尚未实现或实机验证**。本页是多个硬件候选方案之一，不锁定主控，也不取代 [void9 / Pro Micro 与 ESP32 控制协议方案](void9-pro-micro.md)。
+初次调研：2026-10-23；结果更新：2026-11-01。状态：**已执行有限原型验证，未达到 Mac 原生仅输入麦克风目标；暂停作为可交付路线**。本页是多个硬件候选方案之一，不锁定主控，也不取代 [void9 / Pro Micro 与 ESP32 控制协议方案](void9-pro-micro.md)。
+
+## 2026-11-01 决策记录
+
+**当前没有找到并验证可行的方案，能同时满足「Mac 蓝牙直连、免安装额外驱动、系统只出现麦克风输入而不出现输出设备」。本项目暂不承诺这项能力，也不再以此作为购买更贵开发板的依据。** 这是本次调研与被测组合的工程结论，不是所有 macOS 或所有 LE Audio 设备均不可能实现的证明。
+
+### 实测环境与结果
+
+- 主机：macOS 27.0.1（26A434），Apple N1 蓝牙控制器；未记录完整 Mac 整机型号，不外推其他主机。
+- 外设：Seeed XIAO nRF52840 Sense Plus，Zephyr v4.5.0；一个 Source ASE、零 Sink ASE，使用 LC3 测试音，USB 仅供电与日志。本轮没有完成实体麦克风采集或键盘并发验证。
+- 第三轮安全配对成功：板端 `SEC level=2 err=0`。CAS / PACS / ASCS 可发现，Source PAC 与 Source ASE 可读取；ASE 返回 `0100`（ID 1，Idle）。
+- 实验性连接选项 `kCBConnectOptionDetectAndLaunchLEAudio=true` 被系统接收，日志从 `Should Launch: 0` 变为 `Should Launch: 1`。该选项不是公开受支持的产品 API。
+- 同一连接的系统日志报告 `Hearing Aid: disabled. TMAS: disabled. Generic Audio: disabled.`，同时出现 `LE Audio is enabled.`。不能仅凭这些文字确定原因是全局开关、设备分类还是其他系统策略。
+- 未观察到音频 codec/QoS 配置或流启动；板端保持 `conn=1 src=0`，CoreAudio 对比基线没有新增音频设备。**输入和输出都没出现不算“仅输入成功”。**
+- 第二轮有未确认配对与重启干扰，不作为判断 Mac 音频兼容性的证据。尚未用另一台已知兼容的 LE Audio 主机交叉验证该固件的完整音频链路，不能排除外设实现或互通配置问题。
+
+本节归档此前实验，没有在本次文档更新中重新烧录或测试。原始记录保存在操作者本机的 `~/Downloads/codex-micro-le-audio-validation/`，包括 `MACOS-LE-AUDIO-FINDINGS.md`、`ble-test3.log`、`serial-test3.log`、`leaudio-launch-decisions.log`、`ble-leaudio-option.log`、`serial-leaudio-option.log`、`coreaudio-before.json`、`coreaudio-leaudio-final.json` 与 `firmware/fresh-pairing-probe/`。原始日志和实验固件未随仓库发布，因此本文是结果摘要，不是可独立复现的完整实验包。
+
+### 替代路线与选型影响
+
+| 路线 | 当前判断 | 必须接受的限制 |
+| --- | --- | --- |
+| ESP32-WROOM-32 + HFP / HID | 可继续利用现有 voxu 原型经验，减少新增采购 | Mac 会有头戴式耳机式输入/输出；本键盘整机与九键并发仍需验证 |
+| USB 有线麦克风 + HID | 可通过仅采集的 USB Audio 配置实现目标端点设计 [S9] | 不是无线；WROOM-32 无原生 USB，板载 USB 转串口不能充当声卡 [S10] |
+| 无线传输 + USB 音频接收器 | 接收器可设计为仅输入 USB Audio + HID | 电脑必须插接收器；需要额外硬件与固件，本项目未验证 |
+| 自定义 BLE 音频 + 虚拟输入设备 | 属于主机配套软件路线 | 需要安装额外音频组件，不符合本次免驱要求，不采用为当前直连方案 |
+| 原生 LE Audio 直连 | 当前实测未达到目标，暂停作为可交付路线 | 只有取得新的主机兼容证据后再恢复验证 |
+
+大疆不能作为“蓝牙直连、免驱、仅输入”已成立的依据：官方提供接收器经 USB 接电脑的方式；部分发射器支持直接蓝牙连接电脑，但官方提示音质与兼容性限制，并未证明只枚举输入端点 [S8]。用户观察到的直接蓝牙连接为头戴式耳机。不能由此断言所有大疆型号的 USB 接收器均无输出通道。
+
+已购 XIAO 可保留用于后续 USB 或接收器原型，不等于相关功能已完成。接受 HFP 双端点时，现有 ESP32-WROOM-32 有继续验证的价值；是否改选完整整机路线需另行确定，电池续航和有线/无线切换均未验收。
 
 ## 1. 目标与结论
 
@@ -9,7 +39,7 @@
 | 层次 | 本次结论 | 证据与边界 |
 | --- | --- | --- |
 | 单向音频 | 有协议与开源实现依据 | BAP 区分 Source / Sink 端点，Zephyr 允许分别配置其数量；不等于 Mac 接受所有组合 [S1][S2] |
-| Mac 系统麦克风 | 未证实，是首要兼容性风险 | 尚未找到充分的官方支持说明或可复现的第三方 source-only 麦克风直连案例；不据此断言所有 Mac 都不支持 |
+| Mac 系统麦克风 | 本次原型未成功创建，暂停交付承诺 | 安全配对和服务读取成功，但无音频流或 CoreAudio 输入设备；结论限于上述环境和固件 |
 | LE Audio 与 BLE HID 并发 | 架构上可行的判断，待验证 | 音频通过 ISO、控制通过 GATT；这不是本项目已验证的组合固件 [S1] |
 | 复用 voxu | 可评估复用麦克风和交互经验，不能直接复用现有蓝牙音频固件 | 现有 ESP32-WROOM-32 不支持 LE Audio [S4][S6] |
 
@@ -80,7 +110,7 @@ voxu 2026-09-29 记录的是原项目特定 Mac 上的 HFP / Classic HID 原型�
 
 ## 6. 原型验收步骤
 
-以下均为后续待执行步骤，未完成项不标记通过。次数和时长为本项目建议的首轮门槛，不是蓝牙规范指标，也不构成量产认证。
+以下保留为恢复研究时的完整验收标准；上述实验仅完成部分配对与服务检查，未通过纯音频直连验收，更未执行整套并发与电池测试。未完成项不标记通过。次数和时长为本项目建议的首轮门槛，不是蓝牙规范指标，也不构成量产认证。
 
 ### A. 先验证纯音频直连
 
@@ -133,5 +163,8 @@ voxu 2026-09-29 记录的是原项目特定 Mac 上的 HFP / Classic HID 原型�
 | S5 | [Bluetooth SIG：HFP 1.10](https://www.bluetooth.com/specifications/specs/hands-free-profile-1-10/) / [规范正文](https://www.bluetooth.com/specifications/specs/html/?src=hfp_v1-10_1777579152%2FHFP_v1.10%2Fout%2Fen%2Findex-en.html) | §2.2 HF 输入/输出角色、§2.3 双向同步音频、§6.3 表 6.4 HF 功能位 |
 | S6 | [voxu HFP 原型记录](https://github.com/krisxia0506/voxu/blob/6e55e777a23e1938179b623faf87bc70a563ee8c/firmware/hfp-probe/README.md) | INMP441、HFP 双端点、Classic HID / F13 与原项目实测边界 |
 | S7 | [voxu 蓝牙配置](https://github.com/krisxia0506/voxu/blob/6e55e777a23e1938179b623faf87bc70a563ee8c/firmware/hfp-probe/sdkconfig.defaults) | 现有 BR/EDR-only、BLE 关闭、HFP / Classic HID 配置 |
+| S8 | [DJI 直接蓝牙连接说明](https://repair.dji.com/help/content?customId=01700009954&lang=en&paperDocType=ARTICLE&re=US&spaceId=17) / [DJI Mic 2 官方手册](https://dl.djicdn.com/downloads/DJI_Mic_2/20251009/DJI_Mic_2_UMV1.2-EN.pdf) | 区分直接蓝牙与接收器 USB 接电脑，不证明所有型号仅输入 |
+| S9 | [TinyUSB Audio Test Microphone](https://docs.tinyusb.org/en/stable/examples/device/audio_test.html) | USB 仅麦克风采集示例，非本项目完成的实现 |
+| S10 | [乐鑫外设支持表](https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/libraries.html) | 原版 ESP32 无原生 USB；不同 ESP32 型号不能混用能力结论 |
 
-官方与 latest 页面会变化，后续原型需固定 SDK 和固件版本并重新核对。本次仅整理方案，没有导入 voxu 或其他上游源码、图片、模型，没有构建、刷写、配对、录音、耗电测量或 Codex 按键操作；所有原型验收均待执行。
+官方与 latest 页面会变化，后续原型需固定 SDK 和固件版本并重新核对。2026-10-23 版本仅整理方案；2026-11-01 更新归档仓库外已执行的有限原型实验。本次文档更新未导入上游源码或原始实验日志，未重新执行硬件测试；完整验收仍未通过。
