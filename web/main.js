@@ -115,7 +115,7 @@ host.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]); host.addEven
 function save(data,name){const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('#download').onclick=()=>{if(!selected.printable)return;const mesh=new THREE.Mesh(printableGeometry(selected));const data=new STLExporter().parse(mesh,{binary:true});save(data,`codex-micro-${selected.id}-mm.stl`);mesh.geometry.dispose();};
 $('#download-coupon').onclick=()=>{const raw=socketFitCoupon();const g=printableGeometry({id:'socket-fit-coupon',geometry:raw});raw.dispose();const data=new STLExporter().parse(new THREE.Mesh(g),{binary:true});save(data,'codex-micro-socket-fit-coupon-mm.stl');g.dispose();};
-$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-${variant}-stl.zip`;a.download=`codex-micro-v0.16-${variant}-stl.zip`;a.click();};
+$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-${variant}-stl.zip`;a.download=`codex-micro-v0.17-${variant}-stl.zip`;a.click();};
 new ResizeObserver(()=>{const {width,height}=host.getBoundingClientRect();renderer.setSize(width,height); labels.setSize(width,height); camera.aspect=width/height;camera.updateProjectionMatrix();}).observe(host);
 const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
 leaders.classList.add('label-leaders');host.appendChild(leaders);

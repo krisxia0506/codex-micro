@@ -94,7 +94,9 @@ export function buildAssembly(locations,variant='bare'){
   const coupon=cut(union([box(22,22,1.5,0,2,10),pod]),fiveHoles(6,7));
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,24,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
-  let bottom=union([slab(110,110,8,4,-1),ring(103.4,100.2,5.7,1.7,2.9)]);
+  // 2 mm floor; retain the original mating height only at rim and fasteners.
+  let bottom=union([slab(110,110,8,2,-1),ring(110,100.2,8,2.1,.9),
+   ...screwCenters.map(([x,y])=>cylinder(5.6,2.1,x,y,.9)),ring(103.4,100.2,5.7,1.7,2.9)]);
   // Cradle with exterior stops supports the board edges and leaves an underside relief.
   const [bx,by,bz]=xiaoPosition;
   let cradle=cut(box(21,22,3.2,bx,by+.6,3),box(18.4,21.6,3,bx,by,5));
@@ -109,7 +111,7 @@ export function buildAssembly(locations,variant='bare'){
   const usbOpening=move(keep(keep(usbProfile.extrude(10)).rotate([90,0,0])),bx,-49,usbSpec.centerZ);
   // Internal recess stops 1.2 mm short of the exterior, retaining the PCB shoulders.
   const boardRecess=box(21.6,3.8,5.8,bx,-51.9,3);
-  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening]));
+  bottom=cut(union([bottom,box(21,22,2.1,bx,by+.6,.9),cradle]),union([...screws,...nuts,usbOpening]));
   // The frame's solid pillars bridge the two plates; all four holes are coaxial.
   const pillars=screwCenters.map(([x,y])=>union([cylinder(4.5,7,x,y,3),box(10,6,7,Math.sign(x)*48,y,3)]));
   let wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,

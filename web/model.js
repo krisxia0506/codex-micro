@@ -64,7 +64,7 @@ export function createParts(variant='bare') {
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
   const assembly=buildAssembly(switchLocations,variant);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.16 底板移除所有轴座，保留开发板托槽、定位凸沿与 M3 螺母槽。');
+  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.17 底板主体减至 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 中框，沿用四角 M3 紧固。');
   add('top','五孔承托上板 · 下挂轴座',assembly.top,[0,0,10],'#c5cdd0',2.5,'每键五孔：中心 4.4 mm、定位柱 2.1 mm × 2、底座凸台 3.2 mm × 2；板厚 1.5 mm。底座从下方装入。A 版不提供轴壳卡爪锁止，B 版加上方定位板。');
   if(variant==='framed'){add('switch-frame','B · 方孔定位板',assembly.frame,[0,0,15],'#acbac8',3,'14.2 mm 方孔，板厚 1.5 mm；表面比承托板高 5 mm；四角一体支脚，使用四颗 M3×18 螺丝及 1 mm 打印垫片。');
