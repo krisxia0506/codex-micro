@@ -83,10 +83,10 @@ export function decorate(mesh, part) {
     for(const [x,y] of part.socketPositions){
       // Open pin slots are part of the socket solid. Two contact leaves sit
       // below the mouth rather than covering it with opaque decorative discs.
-      for(const [dx,dy] of [[-3.81,-2.54],[2.54,-5.08]]){
+      for(const [dx,dy] of [[-3.81,-5.08],[2.54,-2.54]]){
         for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,6.25,.8);
       }
-      for(const [dx,dy] of [[-7.16,-2.54],[5.74,-5.08]]){
+      for(const [dx,dy] of [[-7.16,-5.08],[5.74,-2.54]]){
         box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,5.7,.85);
         for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,5.93,.8);
       }

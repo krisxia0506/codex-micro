@@ -10,7 +10,7 @@ export const assemblySpec={
  screwDiameter:3.4,nutAcrossFlats:5.8,nutDepth:2.6,
  lipOuter:103.4,lipInner:100.2,lipHeight:1.6,frameInner:104,
  socket:{model:'PG151101S11 / CPG151101S11',bodyWidth:11.3,baseWidth:10.9,bodyDepth:5.89,bodyHeight:1.85,
-  overallWidth:14.5,collarHeight:1.2,pins:[[-3.81,-2.54],[2.54,-5.08]],clearance:.25,bottomZ:5},
+  overallWidth:14.5,collarHeight:1.2,pins:[[-3.81,-5.08],[2.54,-2.54]],clearance:.25,bottomZ:5},
 };
 // Every temporary WASM object is freed after converting the resulting solids.
 export function buildAssembly(locations){
@@ -49,8 +49,10 @@ export function buildAssembly(locations){
   outline.lineTo(-6.06,-6.75);
   outline.quadraticCurveTo(-6.36,-6.75,-6.36,-6.45);
   outline.closePath();
-  const profile=keep(new C([outline.getPoints(16).map(p=>[p.x,p.y]).reverse()]));
-  const terminalRecesses=union([box(2.4,2.1,1.3,-5.56,-2.54,4.9),box(2.4,2.1,1.3,4.14,-5.08,4.9)]);
+  // Reflect the old opposite-face outline about Y=-3.805: viewed from
+  // the insertion side, the right terminal is higher than the left (IMG_6941).
+  const profile=keep(new C([outline.getPoints(16).map(p=>[p.x,-7.61-p.y])]));
+  const terminalRecesses=union([box(2.4,2.1,1.3,-5.56,-5.08,4.9),box(2.4,2.1,1.3,4.14,-2.54,4.9)]);
   const socketBody=cut(extrude(profile,s.bodyHeight,s.bottomZ),terminalRecesses);
   const pinSlots=union(s.pins.map(([x,y])=>box(1.2,.6,3.5,x,y,4.9)));
   const socket=cut(union([socketBody,...s.pins.map(([x,y])=>cylinder(1.45,1.2,x,y,6.85))]),pinSlots);
@@ -59,11 +61,11 @@ export function buildAssembly(locations){
   // solid plug underneath them. The remaining floor stays joined to the plate.
   let pod=cut(box(15.8,10.5,4,-.635,-3.805,3),pocket);
   const contactReliefs=union(s.pins.map(([x,y])=>box(2,1.4,2,x,y,3.8)));
-  const solderBays=union([box(5,3.1,4,-7.15,-2.54,4.4),box(5,3.1,4,6,-5.08,4.4)]);
+  const solderBays=union([box(5,3.1,4,-7.15,-5.08,4.4),box(5,3.1,4,6,-2.54,4.4)]);
   pod=cut(pod,union([solderBays,contactReliefs]));
   // Relief slots isolate flexible tongues on the two long edges.
   const relief=[];
-  for(const [cx,cy] of [[-3.8,-.66],[1,-6.95]]){
+  for(const [cx,cy] of [[-3.8,-6.95],[1,-.66]]){
    for(const dx of [-1.65,1.65])relief.push(box(.65,3.1,4,cx+dx,cy,3.8));
   }
   pod=cut(pod,union(relief));
@@ -78,7 +80,7 @@ export function buildAssembly(locations){
    if(direction<0)yz.reverse();
    return move(keep(keep(keep(new C([yz])).extrude(2.6)).rotate([90,0,90])),cx-1.3,0,0);
   };
-  pod=cut(union([pod,hook(-3.8,-.61,-1),hook(1,-7,1)]),solderBays);
+  pod=cut(union([pod,hook(-3.8,-7,1),hook(1,-.61,-1)]),solderBays);
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,16,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
   let bottom=union([slab(110,110,8,4,-1),ring(103.4,100.2,5.7,1.7,2.9),...locations.map(k=>move(pod,k.x,k.y))]);

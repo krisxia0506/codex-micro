@@ -81,7 +81,7 @@ test('four coaxial M3 fasteners and nuts clear printed material',()=>{
  assert.ok(Math.abs(assemblyValidation.nutShellOverlap)<1e-6);
  assert.ok(Math.abs((assemblySpec.frameInner-assemblySpec.lipOuter)/2-.3)<1e-6);
  assert.equal(assemblySpec.socket.pins[1][0]-assemblySpec.socket.pins[0][0],6.35);
- assert.equal(assemblySpec.socket.pins[0][1]-assemblySpec.socket.pins[1][1],2.54);
+ assert.equal(assemblySpec.socket.pins[1][1]-assemblySpec.socket.pins[0][1],2.54);
 });
 
 test('switch plate exports face-down with broad bed contact',()=>{
@@ -163,7 +163,7 @@ test('MX holes open from underneath and stop below the keycap roof',()=>{
 test('socket hook undersides rise at 45 degrees with a substantial nose',()=>{
  const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
  const mesh=new Mesh(geometry,material);
- for(const [x,boundary,direction] of [[-3.8,-.61,-1],[1,-7,1]]){
+ for(const [x,boundary,direction] of [[-3.8,-7,1],[1,-.61,-1]]){
   for(const inset of [.1,.3,.44]){
    const hits=new Raycaster(new Vector3(x,boundary+direction*inset,6.86),new Vector3(0,0,1)).intersectObject(mesh);
    assert.ok(Math.abs(hits[0]?.point.z-(6.9+inset))<1e-4,'underside must ramp upward without a horizontal overhang');
@@ -179,7 +179,7 @@ test('socket hooks have solid sloping rear buttresses and open side relief slots
  const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
  const mesh=new Mesh(geometry,material);
  const top=(x,y)=>new Raycaster(new Vector3(x,y,10),new Vector3(0,0,-1)).intersectObject(mesh)[0]?.point.z;
- for(const [x,boundary,direction] of [[-3.8,-.61,-1],[1,-7,1]]){
+ for(const [x,boundary,direction] of [[-3.8,-7,1],[1,-.61,-1]]){
   for(const rear of [.8,1.1,1.5]){
    const expected=8.4-(rear-.65)*1.4/1.35;
    assert.ok(Math.abs(top(x,boundary-direction*rear)-expected)<1e-4,'rear must form a continuous slope down to rim');
@@ -263,4 +263,24 @@ test('socket pin slots are open through both collars and bodies',()=>{
   }
  }
  mesh.material.dispose();
+});
+
+
+test('socket and pocket handedness matches the insertion-face photo IMG_6941',async()=>{
+ const material=new MeshBasicMaterial({side:DoubleSide});
+ const socket=new Mesh(parts.find(p=>p.id==='sockets').geometry,material);
+ const coupon=new Mesh(socketFitCoupon(),material);
+ const [x,y]=parts.find(p=>p.id==='sockets').socketPositions[0];
+ const hit=(mesh,x,y)=>new Raycaster(new Vector3(x,y,6.5),new Vector3(0,0,1)).intersectObject(mesh)[0];
+ // Fixed landmark coordinates, deliberately independent of the model's pin array.
+ assert.ok(hit(socket,x+3,y-1.8),'right raised lobe must contain plastic');
+ assert.equal(hit(socket,x+3,y-5.8),undefined,'opposite right corner must be cut back');
+ const floor=(x,y)=>new Raycaster(new Vector3(x,y,6.5),new Vector3(0,0,-1)).intersectObject(coupon)[0]?.point.z;
+ assert.ok(Math.abs(floor(3,-1.8)-5)<1e-4,'pocket must receive the raised lobe');
+ const {wireGeometry}=await import('../../web/harness.js');
+ for(const [side,expected] of [[0,[-7.15,-5.08,5.75]],[1,[6,-2.54,5.75]]]){
+  const g=wireGeometry(0,0,0,side);
+  assert.deepEqual(g.parameters.path.getPoint(0).toArray(),expected);g.dispose();
+ }
+ coupon.geometry.dispose();material.dispose();
 });

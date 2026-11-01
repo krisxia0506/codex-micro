@@ -11,7 +11,7 @@ export function wireGeometry(x,y,index,side){
  const direction=side===0?-1:1;
  const endpoint=xiaoWorldPoint(direction*8.3,-7.6+(index%7)*2.54,1.05);
  const endY=endpoint[1];
- const terminalX=side===0?-7.15:6,terminalY=side===0?-2.54:-5.08;
+ const terminalX=side===0?-7.15:6,terminalY=side===0?-5.08:-2.54;
  const routeY=Math.max(y-12,-40.2); // Leave clearance around the lower M3 pillars.
  const points=[[x+terminalX,y+terminalY,5.75],[x+direction*9.1,y+terminalY,5.75],
   [x+direction*9.1,routeY,7.5],[direction*(39+index*.7),routeY,7.5],
