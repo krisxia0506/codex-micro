@@ -80,7 +80,9 @@ export function createParts() {
   const stick=new THREE.CylinderGeometry(8,6,9,40); stick.rotateX(Math.PI/2); stick.translate(0,0,4.5);
   add('joystick','摇杆帽',stick,[30,30,18],'#25282a',4,'实心外观占位件，未适配实际摇杆。');
   const electronic=(id,name,geometry,position,color,description)=>{
-    add(id,name,geometry,position,color,2,description+' 展示示意，不导出 STL。');
+    // Switches and both control modules lift above the carrier, below the caps.
+    const level=id.startsWith('switch-')||['encoder','stick-module'].includes(id)?3.25:2;
+    add(id,name,geometry,position,color,level,description+' 展示示意，不导出 STL。');
     parts.at(-1).printable=false;
   };
   electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[...xiaoPosition],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；顶部居中（中心 0, 53 mm）；USB-C 朝向外壳 +Y 外侧；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');

@@ -258,3 +258,18 @@ test('only A remains and the controller is top-centred',()=>{
  assert.ok(Math.abs(bottom.boundingBox.max.y-65)<1e-5);
  assert.ok(Math.abs(bottom.boundingBox.min.y+55)<1e-5);
 });
+
+test('exploded switch group separates above carrier and below caps',()=>{
+ const top=parts.find(p=>p.id==='top');
+ const group=parts.filter(p=>p.id.startsWith('switch-')||['encoder','stick-module'].includes(p.id));
+ assert.equal(group.length,15);
+ const caps=parts.filter(p=>p.id.startsWith('key-')||['knob','joystick'].includes(p.id));
+ for(const amount of [0,.2,.5,1]){
+  const shift=p=>p.level*25*amount;
+  for(const p of group){
+   assert.equal(shift(p),shift(group[0]),'all switch-group members move together');
+   if(amount>0){assert.ok(shift(p)>shift(top));assert.ok(caps.every(c=>shift(c)>shift(p)));}
+   if(p.id.startsWith('switch-'))assert.ok(p.position[2]+shift(p)>=top.position[2]+1.5+shift(top),'switch body never falls below carrier');
+  }
+ }
+});
