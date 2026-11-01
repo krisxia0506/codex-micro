@@ -1,21 +1,28 @@
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { Mesh } from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { zipSync,strToU8 } from 'fflate';
 import { createParts, printableGeometry, dimensions, socketFitCoupon } from '../../web/model.js';
-const dir=new URL('../../exports/stl/',import.meta.url); await mkdir(dir,{recursive:true});
-const parts=createParts().filter(p=>p.printable);parts.push({id:'socket-fit-coupon',name:'单底座试配件',printable:true,geometry:socketFitCoupon()}); const exporter=new STLExporter();
-for(const part of parts) {
-  const data=exporter.parse(new Mesh(printableGeometry(part)),{binary:true});
-  await writeFile(new URL(`${part.id}.stl`,dir),Buffer.from(data.buffer,data.byteOffset,data.byteLength));
-}
-await writeFile(new URL('../manifest.json',dir),JSON.stringify({version:1,modelVersion:'0.15',units:'mm',dimensions,status:'Concept samples; not hardware-fit validated',parts:parts.map(({geometry,...p})=>p)},null,2)+'\n');
-console.log(`Exported ${parts.length} separate STL parts in millimetres to exports/stl/`);
-const {zipSync,strToU8}=await import('fflate');
-const {readFile}=await import('node:fs/promises');
-const archive={};
-for(const part of parts) archive[`${part.id}.stl`]=new Uint8Array(await readFile(new URL(`${part.id}.stl`,dir)));
-archive['README.txt']=strToU8('Codex Micro handwired concept samples v0.15\nv0.15: Corrected socket and pocket handedness against user physical photo IMG_6941. Mirrored local Y about -3.805 mm for body, pin slots, contact recesses, terminal windows, hooks and wire starts. Collars still face switches. Replace v0.14 bottom and coupon; previous pockets do not match the supplied socket. Physical fit remains unverified.\nv0.14: Rebuilt all 13 socket pockets from a curved PG151101S11 body envelope with 0.25 mm radial print clearance. Open pin slots, terminal recesses and under-contact reliefs; lower solder bays. Unspecified mould radii are approximated. Same reinforced sloping retention hooks. Physical fit and insertion force remain unverified.\nv0.13: Capsule-shaped 10 x 4 mm Type-C panel opening, R2 ends. This is a print-fit allowance, not a USB standard panel cutout. Connector visual aperture uses GCT USB4105 drawing nominal 8.34 x 2.56 mm; actual XIAO connector model remains unverified. Internal board recess retains 1.2 mm exterior wall to block PCB shoulders. Bottom separate stops replaced by continuous midframe wall. USB face recessed 0.4 mm. Upward clamping remains unimplemented. XIAO edge-support cradle, underside relief, side solder windows and exterior USB opening. Replace bottom, wall and top together. Cradle locates the board but does not clamp it vertically. Actual PCB underside and USB cable fit must be checked. Units: millimetres (mm). Each STL rests on Z=0.\nXIAO Sense Plus and handwired architecture. Integral socket pockets and retaining shoulders follow PG151101S11 dimensions. v0.9 adds solid triangular rear buttresses from hook heads to pod rims on all 13 bottom socket mounts. Side slots stay open. Hooks retain 45-degree undersides and 0.70 mm noses. Buttresses stiffen the tongues: insertion force and retention need physical testing. Target trial: PLA, 0.4 mm nozzle, 0.12 mm layers. Bottom: flat face on bed, pockets upwards; hooks intended for support-free trial, not yet physically validated. Shell has locating lips and four M3x12 screws with M3 nuts (hardware not printed). No switch/fastener fit validation. Keycaps have hollow undersides and MX cross sockets (4.30 mm span, 1.30 mm arm, 4.20 mm depth); print one standard key first to check fit. Voice key uses two sockets 20 mm apart, not standard stabilizer spacing. Knob and joystick remain solid placeholders.\nTop plate is already exported face-down with the lip upwards. Fit bottom nuts, seat both locating lips in the frame, then tighten four screws from above. Use your slicer to check supports and tolerances. Not a working keyboard kit.\n');
-archive['manifest.json']=new Uint8Array(await readFile(new URL('../manifest.json',dir)));
-await rm(new URL('socket-carriers.stl',dir),{force:true}); // Superseded generated sample.
+const exporter=new STLExporter();
 const publicDir=new URL('../../public/',import.meta.url);await mkdir(publicDir,{recursive:true});
-await writeFile(new URL('codex-micro-stl.zip',publicDir),zipSync(archive));
+for(const variant of ['bare','framed']){
+ const dir=new URL(`../../exports/${variant}/`,import.meta.url);await mkdir(dir,{recursive:true});
+ const parts=createParts(variant).filter(p=>p.printable);
+ parts.push({id:'socket-fit-coupon',name:'五孔上板与下挂底座试配件',printable:true,geometry:socketFitCoupon()});
+ const archive={};
+ for(const part of parts){
+  const geometry=printableGeometry(part),data=exporter.parse(new Mesh(geometry),{binary:true});
+  const bytes=new Uint8Array(data.buffer,data.byteOffset,data.byteLength);
+  archive[`${part.id}.stl`]=bytes;await writeFile(new URL(`${part.id}.stl`,dir),bytes);geometry.dispose();
+ }
+ const manifest={version:1,modelVersion:'0.16',variant,units:'mm',dimensions,status:'Unvalidated physical fit; A has no switch-housing latch',screws:variant==='framed'?'4 x M3 x 18':'4 x M3 x 12',parts:parts.map(({geometry,...p})=>p)};
+ archive['manifest.json']=strToU8(JSON.stringify(manifest,null,2));
+ archive['README.txt']=strToU8(`Codex Micro v0.16 / ${variant==='bare'?'A - five-hole carrier only':'B - five-hole carrier plus square-hole switch plate'}\nUnits: mm. Replace both old bottom and top. Socket mounts are now underneath the top carrier.\nFive holes per switch: centre 4.4 mm; two locating pegs 2.1 mm at +/-5.08; two socket-collar holes 3.2 mm at (-3.81,2.54) and (2.54,5.08), Cartesian top view. These include print allowances, not manufacturer tolerances. Carrier thickness 1.5 mm. B square-hole plate top is 5 mm above the carrier top, with integral corner spacers and 14.2 mm openings.\nHardware: ${manifest.screws}, four M3 hex nuts. B includes four 1 mm printed washers above the square-hole plate to use standard M3x18 lengths. Do not use A screws for B.\nPrint carrier and coupon with broad top face on bed (already oriented), socket mounts upward. B frame is exported broad face on bed, feet upward; washers print flat. Bottom flat face on bed.\nTrial target: PLA / 0.4 mm nozzle / 0.12 mm layers. Print coupon first: seat socket from underneath carrier, then insert switch from the five-hole side. Centre and locating pegs must pass freely. A does not latch the switch housing; B uses the separate square-hole plate. Check socket retention before pressing hard. Geometry checks do not establish physical fit or load capacity.\nXIAO cradle / USB geometry remains provisional; knob and joystick cap remain solid appearance pieces. No working electronics kit or assembly certification.\nReferences: MakerWorld BigNum 610097 and 20/20 2563301 (structure only); KiCad SW_Cherry_MX_1.00u_PCB footprint; Cherry MX series and Kailh PG151101S11 drawings. Independently constructed geometry, no third-party CAD redistributed.\n`);
+ const zip=zipSync(archive);
+ await writeFile(new URL(`codex-micro-${variant}-stl.zip`,publicDir),zip);
+ await writeFile(new URL(`../../exports/codex-micro-v0.16-${variant}-stl.zip`,import.meta.url),zip);
+ if(variant==='bare')await writeFile(new URL('codex-micro-stl.zip',publicDir),zip);
+ await writeFile(new URL('manifest.json',dir),archive['manifest.json']);
+ console.log(`${variant}: exported ${parts.length} STL files`);
+ for(const p of parts)p.geometry.dispose();
+}

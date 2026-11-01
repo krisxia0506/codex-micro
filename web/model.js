@@ -1,3 +1,4 @@
+import { mxSpec } from './mx.js';
 import * as THREE from 'three';
 import { xiaoPosition, xiaoRotation } from './harness.js';
 import { buildAssembly, assemblySpec, hollowKeycap, keycapSpec } from './assembly.js';
@@ -49,7 +50,7 @@ function keycap(w,d,h) {
 }
 
 function circle(r,x,y) { const p = new THREE.Path(); p.absarc(x,y,r,0,Math.PI*2,false); return p; }
-export function createParts() {
+export function createParts(variant='bare') {
   const parts=[];
   function add(id,name,geometry,position,color,level,description) {
     parts.push({id,name,geometry,position,color,level,description,printable:true});
@@ -61,11 +62,14 @@ export function createParts() {
   keys.push({x:0,y:-30,w:38.5,d:18.5,name:'语音键',color:'#e9edef'});
   keys.push({x:30,y:-30,w:18.5,d:18.5,name:'发送',color:'#e9edef'});
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
-  const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
+  const assembly=buildAssembly(switchLocations,variant);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；含 XIAO 定位槽、底部避空；中框连续外墙防拔及 Type-C 小窗口；v0.15：按实物照片纠正轮廓方向的 13 个弧形底座承托槽、触点底部避空、低位焊片窗口、弹性限位舌与防脱肩；v0.9 卡钩含背部三角斜坡加强筋、45° 下沿和 0.70 mm 厚钩头，针对 PLA / 0.4 mm 喷嘴试印；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
-  add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 高中框；四角贯穿螺丝支柱，上下端接纳定位凸沿，单侧 0.30 mm 配合间隙。凸沿负责定位，M3 螺丝负责锁紧。');
-  add('top','轴体定位板 · 下凸沿',assembly.top,[0,0,10],'#c5cdd0',2.5,'1.5 mm 轴体板，四角向下局部加厚至 2.5 mm；下侧一圈 1.6 mm 凸沿；四角直径 3.4 mm 通孔。14.2 mm 轴孔为打印试配值，卡爪配合仍待试装。');
+  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.16 底板移除所有轴座，保留开发板托槽、定位凸沿与 M3 螺母槽。');
+  add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 中框，沿用四角 M3 紧固。');
+  add('top','五孔承托上板 · 下挂轴座',assembly.top,[0,0,10],'#c5cdd0',2.5,'每键五孔：中心 4.4 mm、定位柱 2.1 mm × 2、底座凸台 3.2 mm × 2；板厚 1.5 mm。底座从下方装入。A 版不提供轴壳卡爪锁止，B 版加上方定位板。');
+  if(variant==='framed'){add('switch-frame','B · 方孔定位板',assembly.frame,[0,0,15],'#acbac8',3,'14.2 mm 方孔，板厚 1.5 mm；表面比承托板高 5 mm；四角一体支脚，使用四颗 M3×18 螺丝及 1 mm 打印垫片。');
+   add('frame-washers','B · 四角螺丝垫片',assembly.washers,[0,0,16.5],'#acbac8',3.1,'四个厚 1 mm 的打印垫片，配合 M3×18 螺丝，置于方孔板上方。');
+  }else {assembly.frame.dispose();assembly.washers.dispose();}
   keys.forEach((k,i)=>{
     const mounts=k.name==='语音键'?[-10,10]:[0];
     const exterior=keycap(k.w,k.d,keycapSpec.height);
@@ -84,12 +88,12 @@ export function createParts() {
   };
   electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[...xiaoPosition],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；移至左下无轴体空位（中心 -30, -43 mm）；USB-C 已朝向外壳 -Y 外侧；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
   parts.at(-1).rotationZ=xiaoRotation;
-  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8.5],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
+  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,mxSpec.carrierTop],'#464b52','14 × 14 mm 轴体外观包络；含底部中心柱、两定位柱及两金属脚示意；按 MX 标称布局核对。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-30,30,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[30,30,7],'#373c43','位于右上摇杆帽下方。');
-  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。底板卡槽承托，两个防脱肩限位；真实贯通插槽、端部触点凹口；未标注圆角近似，卡槽单边间隙 0.25 mm，待打印试配。');
+  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。上板下挂卡槽与防脱钩固定；真实贯通插槽、端部触点凹口；未标注圆角近似，卡槽单边间隙 0.25 mm，待打印试配。');
   parts.at(-1).socketPositions=switchLocations.map(k=>[k.x,k.y]);
-  electronic('case-screws','四角 M3 × 12 螺丝',assembly.bolts,[0,0,0],'#72777d','4 颗 M3 × 12 内六角圆柱头螺丝，从顶板贯穿中框进入底板螺母；不打印。');
+  electronic('case-screws',`四角 M3 × ${variant==='framed'?18:12} 螺丝`,assembly.bolts,[0,0,0],'#72777d',`4 颗 M3 × ${variant==='framed'?18:12} 螺丝，四角同轴锁紧；不打印。`);
   parts.at(-1).level=3.2;
   electronic('case-nuts','底板 M3 六角螺母',assembly.nuts,[0,0,0],'#aaaeb3','4 颗 M3 六角螺母，从底面放入 5.8 mm 对边、2.6 mm 深的防转槽；不打印。');
   parts.at(-1).level=-.25;
@@ -99,7 +103,7 @@ export function printableGeometry(part) {
   if(part.printable===false) throw new Error(`Electronic placeholder cannot be printed: ${part.id}`);
   const geometry=part.geometry.clone();
   // Print the switch plate face-down so its locating lip grows upwards.
-  if(part.id==='top')geometry.rotateX(Math.PI);
+  if(['top','switch-frame','socket-fit-coupon'].includes(part.id))geometry.rotateX(Math.PI);
   geometry.computeBoundingBox();
   geometry.translate(0,0,-geometry.boundingBox.min.z); return geometry;
 }

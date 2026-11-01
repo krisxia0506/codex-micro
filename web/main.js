@@ -18,7 +18,11 @@ function reset(){camera.position.set(120,-160,180); controls.target.set(0,0,30);
 scene.add(new THREE.HemisphereLight(0xffffff,0x777482,2));
 const light=new THREE.DirectionalLight(0xffffff,2); light.position.set(-100,-80,300); light.castShadow=true; light.shadow.mapSize.set(2048,2048); Object.assign(light.shadow.camera,{left:-220,right:220,top:220,bottom:-220}); light.shadow.bias=-0.001; scene.add(light);
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshStandardMaterial({color:'#edece8',roughness:1})); floor.position.z=-1.1; floor.receiveShadow=true; scene.add(floor);
-const parts=createParts(); const meshes=[]; let keyInspection=null; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
+const variant=new URLSearchParams(location.search).get('variant')==='framed'?'framed':'bare';
+$('#variant').value=variant;
+$('#variant').onchange=e=>{const url=new URL(location.href);url.searchParams.set('variant',e.target.value);location.href=url.href;};
+$('#variant-note').textContent=variant==='framed'?'B · 带方孔定位板，使用 M3×18 螺丝＋1 mm 垫片；板面高于承托面 5 mm。':'A · 五孔承托，轴壳外露；不提供轴壳卡爪锁止，使用 M3×12 螺丝。';
+const parts=createParts(variant); const meshes=[]; let keyInspection=null; let selected=parts[0]; let electronicsOnly=false; const annotations=[];
 const keycaps=parts.filter(part=>part.id.startsWith('key-'));
 const partGroups=[
  {id:'keycap',name:'键帽组',members:parts.filter(part=>keycaps.includes(part)||['knob','joystick'].includes(part.id))},
@@ -81,16 +85,16 @@ function select(part){ if(keyInspection){if(part.id.startsWith('key-'))aimKeyBot
 $('#explode').oninput=e=>{leaveKeyInspection();const t=Number(e.target.value)/100; $('#amount').textContent=`${e.target.value}%`; for(const m of meshes)m.position.z=m.userData.part.position[2]+m.userData.part.level*25*t; controls.target.z=30+45*t;};
 $('#assembly').onclick=()=>{leaveKeyInspection();
  electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
- const ids=['bottom','wall','top','sockets','case-screws','case-nuts'];
+ const ids=['bottom','wall','top','switch-frame','frame-washers','sockets','case-screws','case-nuts'];
  for(const mesh of meshes){mesh.visible=ids.includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
  $('#explode').value='80';$('#explode').dispatchEvent(new Event('input'));camera.position.set(155,-210,150);controls.target.set(0,0,45);controls.update();select(parts.find(p=>p.id==='bottom'));
 };
 $('#mounts').onclick=()=>{leaveKeyInspection();
  electronicsOnly=false;$('#electronics').checked=false;$('#wires').checked=false;
- for(const mesh of meshes){mesh.visible=['bottom','sockets'].includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
- $('#explode').value='20';$('#explode').dispatchEvent(new Event('input'));camera.position.set(100,-150,180);controls.target.set(0,0,15);controls.update();select(parts.find(p=>p.id==='bottom'));
+ for(const mesh of meshes){mesh.visible=['top','sockets'].includes(mesh.userData.part.id);mesh.userData.part.row.querySelector('input').checked=mesh.visible;}
+ $('#explode').value='20';$('#explode').dispatchEvent(new Event('input'));camera.position.set(100,-150,-110);controls.target.set(0,0,15);floor.visible=false;controls.update();select(parts.find(p=>p.id==='top'));
 };
-$('#reset').onclick=()=>{leaveKeyInspection();reset();}; $('#top').onclick=()=>{leaveKeyInspection();camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
+$('#reset').onclick=()=>{leaveKeyInspection();floor.visible=true;reset();}; $('#top').onclick=()=>{leaveKeyInspection();camera.position.set(0,-.01,250); controls.target.set(0,0,0); controls.update();};
 $('#wire').onchange=e=>meshes.forEach(m=>m.traverse(child=>{if(child.isMesh)child.material.wireframe=e.target.checked;}));
 $('#show-all').onclick=()=>{leaveKeyInspection();electronicsOnly=false; $('#electronics').checked=false; meshes.forEach(m=>{m.visible=true;m.userData.part.row.querySelector('input').checked=true;});syncGroups();};
 $('#electronics').onchange=e=>{leaveKeyInspection();electronicsOnly=e.target.checked; meshes.forEach(m=>{m.visible=!electronicsOnly||(!m.userData.part.printable||m.userData.part.electronicLayer===true);m.userData.part.row.querySelector('input').checked=m.visible;}); if(electronicsOnly)select(parts.find(p=>p.id==='xiao'));syncGroups();};
@@ -110,8 +114,8 @@ const ray=new THREE.Raycaster(), pointer=new THREE.Vector2(); let down;
 host.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]); host.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return; const r=host.getBoundingClientRect(); pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(pointer,camera); const hit=ray.intersectObjects(meshes.filter(m=>m.visible))[0]; if(hit){let object=hit.object;while(!object.userData.part&&object.parent)object=object.parent;select(object.userData.part);}});
 function save(data,name){const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('#download').onclick=()=>{if(!selected.printable)return;const mesh=new THREE.Mesh(printableGeometry(selected));const data=new STLExporter().parse(mesh,{binary:true});save(data,`codex-micro-${selected.id}-mm.stl`);mesh.geometry.dispose();};
-$('#download-coupon').onclick=()=>{const g=socketFitCoupon();const data=new STLExporter().parse(new THREE.Mesh(g),{binary:true});save(data,'codex-micro-socket-fit-coupon-mm.stl');g.dispose();};
-$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-stl.zip`;a.download='codex-micro-stl.zip';a.click();};
+$('#download-coupon').onclick=()=>{const raw=socketFitCoupon();const g=printableGeometry({id:'socket-fit-coupon',geometry:raw});raw.dispose();const data=new STLExporter().parse(new THREE.Mesh(g),{binary:true});save(data,'codex-micro-socket-fit-coupon-mm.stl');g.dispose();};
+$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-${variant}-stl.zip`;a.download=`codex-micro-v0.16-${variant}-stl.zip`;a.click();};
 new ResizeObserver(()=>{const {width,height}=host.getBoundingClientRect();renderer.setSize(width,height); labels.setSize(width,height); camera.aspect=width/height;camera.updateProjectionMatrix();}).observe(host);
 const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
 leaders.classList.add('label-leaders');host.appendChild(leaders);

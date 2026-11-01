@@ -1,3 +1,4 @@
+import { mxSpec, socketTerminals } from './mx.js';
 import * as THREE from 'three';
 import { keycapSpec } from './assembly.js';
 import { capsule, usbSpec, usbShellGeometry } from './usb.js';
@@ -53,9 +54,11 @@ export function decorate(mesh, part) {
     for(let i=0;i<4;i++){const angle=Math.PI/4+i*Math.PI/2;const mark=box(3,.6,.15,'#101314',Math.cos(angle)*4.7,Math.sin(angle)*4.7,9.4);mark.rotation.z=angle;}
   }
   if(part.id.startsWith('switch-')) {
-    box(keycapSpec.stemSpan,keycapSpec.stemBar,3.7,'#caa6db',0,0,8.85);
-    box(keycapSpec.stemBar,keycapSpec.stemSpan,3.7,'#caa6db',0,0,8.85);
-    for(const x of [-5,5])box(.7,1,2,'#caa35f',x,0,-.5,.8);
+    box(keycapSpec.stemSpan,keycapSpec.stemBar,4.6,'#caa6db',0,0,9.3);
+    box(keycapSpec.stemBar,keycapSpec.stemSpan,4.6,'#caa6db',0,0,9.3);
+    cylinder(mxSpec.postDiameter/2,3.3,'#454b50',0,0,-1.65);
+    for(const [x,y] of mxSpec.guides)cylinder(.8,3.3,'#454b50',x,y,-1.65);
+    for(const [x,y] of mxSpec.pins)box(1.1,.4,3.3,'#caa35f',x,y,-1.65,.8);
   }
   if(part.id==='encoder') {
     cylinder(3,4,'#c7cbd0',0,0,9);
@@ -83,12 +86,12 @@ export function decorate(mesh, part) {
     for(const [x,y] of part.socketPositions){
       // Open pin slots are part of the socket solid. Two contact leaves sit
       // below the mouth rather than covering it with opaque decorative discs.
-      for(const [dx,dy] of [[-3.81,-5.08],[2.54,-2.54]]){
-        for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,6.25,.8);
+      for(const [dx,dy] of mxSpec.pins){
+        for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,9.4,.8);
       }
-      for(const [dx,dy] of [[-7.16,-5.08],[5.74,-2.54]]){
-        box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,5.7,.85);
-        for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,5.93,.8);
+      for(const [dx,dy] of socketTerminals){
+        box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,8.85,.85);
+        for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,9.08,.8);
       }
     }
   }

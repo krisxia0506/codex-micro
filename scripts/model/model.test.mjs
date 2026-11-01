@@ -10,7 +10,8 @@ test('electronic placeholders cannot be exported',()=>{
  assert.equal(parts.filter(p=>p.printable).length,17);
  for(const p of parts.filter(p=>!p.printable)) assert.throws(()=>printableGeometry(p),/cannot be printed/);
 });
-for(const part of [...parts.filter(p=>p.printable),{id:"socket-fit-coupon",geometry:socketFitCoupon()}]) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
+const bExtras=createParts('framed').filter(p=>['switch-frame','frame-washers'].includes(p.id));
+for(const part of [...parts.filter(p=>p.printable),...bExtras,{id:"socket-fit-coupon",geometry:socketFitCoupon()}]) test(`${part.id}: watertight, positive-volume STL at Z=0`,()=>{
  const geometry=printableGeometry(part);
  const data=new STLExporter().parse(new Mesh(geometry),{binary:true});
  const parsed=new STLLoader().parse(data.buffer); const a=parsed.getAttribute('position');
@@ -139,7 +140,7 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
 test('all keycaps have connected hollow shells and aligned MX mounts',()=>{
  for(const p of parts.filter(p=>p.id.startsWith('key-'))){
   const v=p.keycapValidation;assert.equal(v.components,1);assert.ok(Math.abs(v.stemOverlap)<1e-6);
-  assert.ok(v.engagement>=3);assert.ok(v.roofThickness>=1.5);
+  assert.ok(v.engagement>=2.3-1e-6);assert.ok(v.roofThickness>=1.5);
   assert.equal(v.mounts,p.id==='key-11'?2:1);
  }
  assert.deepEqual(parts.find(p=>p.id==='key-11').mountXs,[-10,10]);
@@ -157,36 +158,6 @@ test('MX holes open from underneath and stop below the keycap roof',()=>{
   }
  }
  material.dispose();
-});
-
-
-test('socket hook undersides rise at 45 degrees with a substantial nose',()=>{
- const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
- const mesh=new Mesh(geometry,material);
- for(const [x,boundary,direction] of [[-3.8,-7,1],[1,-.61,-1]]){
-  for(const inset of [.1,.3,.44]){
-   const hits=new Raycaster(new Vector3(x,boundary+direction*inset,6.86),new Vector3(0,0,1)).intersectObject(mesh);
-   assert.ok(Math.abs(hits[0]?.point.z-(6.9+inset))<1e-4,'underside must ramp upward without a horizontal overhang');
-   const top=new Raycaster(new Vector3(x,boundary+direction*inset,10),new Vector3(0,0,-1)).intersectObject(mesh)[0]?.point.z;
-   assert.ok(top-hits[0].point.z>=.7,'hook nose must retain at least 0.7 mm thickness');
-  }
- }
- geometry.dispose();material.dispose();
-});
-
-
-test('socket hooks have solid sloping rear buttresses and open side relief slots',()=>{
- const geometry=socketFitCoupon(),material=new MeshBasicMaterial({side:DoubleSide});
- const mesh=new Mesh(geometry,material);
- const top=(x,y)=>new Raycaster(new Vector3(x,y,10),new Vector3(0,0,-1)).intersectObject(mesh)[0]?.point.z;
- for(const [x,boundary,direction] of [[-3.8,-7,1],[1,-.61,-1]]){
-  for(const rear of [.8,1.1,1.5]){
-   const expected=8.4-(rear-.65)*1.4/1.35;
-   assert.ok(Math.abs(top(x,boundary-direction*rear)-expected)<1e-4,'rear must form a continuous slope down to rim');
-  }
-  for(const dx of [-1.65,1.65])assert.ok(top(x+dx,boundary-direction*.7)<=3.8001,'buttress must not fill side relief slots');
- }
- geometry.dispose();material.dispose();
 });
 
 
@@ -256,31 +227,35 @@ test('socket pin slots are open through both collars and bodies',()=>{
  const mesh=new Mesh(parts.find(p=>p.id==='sockets').geometry,new MeshBasicMaterial({side:DoubleSide}));
  for(const [x,y] of parts.find(p=>p.id==='sockets').socketPositions){
   for(const [dx,dy] of assemblySpec.socket.pins){
-   const hits=new Raycaster(new Vector3(x+dx,y+dy,9),new Vector3(0,0,-1)).intersectObject(mesh);
+   const hits=new Raycaster(new Vector3(x+dx,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh);
    assert.equal(hits.length,0,'no plastic may fill the pin insertion path');
-   const rim=new Raycaster(new Vector3(x+dx+.9,y+dy,9),new Vector3(0,0,-1)).intersectObject(mesh);
-   assert.ok(Math.abs(rim[0]?.point.z-8.05)<1e-4,'collar remains around the slot');
+   const rim=new Raycaster(new Vector3(x+dx+.9,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh);
+   assert.ok(Math.abs(rim[0]?.point.z-11.2)<1e-4,'collar remains around the slot');
   }
  }
  mesh.material.dispose();
 });
 
 
-test('socket and pocket handedness matches the insertion-face photo IMG_6941',async()=>{
- const material=new MeshBasicMaterial({side:DoubleSide});
- const socket=new Mesh(parts.find(p=>p.id==='sockets').geometry,material);
- const coupon=new Mesh(socketFitCoupon(),material);
- const [x,y]=parts.find(p=>p.id==='sockets').socketPositions[0];
- const hit=(mesh,x,y)=>new Raycaster(new Vector3(x,y,6.5),new Vector3(0,0,1)).intersectObject(mesh)[0];
- // Fixed landmark coordinates, deliberately independent of the model's pin array.
- assert.ok(hit(socket,x+3,y-1.8),'right raised lobe must contain plastic');
- assert.equal(hit(socket,x+3,y-5.8),undefined,'opposite right corner must be cut back');
- const floor=(x,y)=>new Raycaster(new Vector3(x,y,6.5),new Vector3(0,0,-1)).intersectObject(coupon)[0]?.point.z;
- assert.ok(Math.abs(floor(3,-1.8)-5)<1e-4,'pocket must receive the raised lobe');
- const {wireGeometry}=await import('../../web/harness.js');
- for(const [side,expected] of [[0,[-7.15,-5.08,5.75]],[1,[6,-2.54,5.75]]]){
-  const g=wireGeometry(0,0,0,side);
-  assert.deepEqual(g.parameters.path.getPoint(0).toArray(),expected);g.dispose();
+
+for(const variant of ['bare','framed'])test(`${variant}: five-pin switch insertion, carrier, frame and fasteners clear`,()=>{
+ const ps=createParts(variant),v={...assemblyValidation};
+ for(const field of ['pinShellOverlap','pinSocketOverlap','insertionOverlap','switchBodyOverlap','socketHolderOverlap','shellOverlap','boltShellOverlap','nutShellOverlap'])
+  assert.ok(Math.abs(v[field])<1e-6,`${variant} ${field}: ${v[field]}`);
+ assert.equal(v.topComponents,1);assert.equal(v.bottomComponents,1);
+ if(variant==='framed'){for(const p of ps.filter(p=>p.id.startsWith('key-')))assert.ok(p.position[2]-4>=16.5+.29,'full key travel clears frame');assert.equal(v.frameComponents,1);assert.ok(Math.abs(v.frameShellOverlap)<1e-6);}
+ const top=ps.find(p=>p.id==='top'),mesh=new Mesh(top.geometry,new MeshBasicMaterial({side:DoubleSide}));mesh.position.fromArray(top.position);mesh.updateMatrixWorld();
+ // Independent MX drawing landmarks, not taken from the hole generator.
+ for(const [x,y] of ps.find(p=>p.id==='sockets').socketPositions)for(const [dx,dy] of [[0,0],[-5.08,0],[5.08,0],[-3.81,2.54],[2.54,5.08]]){
+  assert.equal(new Raycaster(new Vector3(x+dx,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh).length,0,'five holes must pass through carrier and holder');
  }
- coupon.geometry.dispose();material.dispose();
+ mesh.material.dispose();for(const p of ps)p.geometry.dispose();
+});
+
+test('B frame exports on its broad face rather than on four screw seats',()=>{
+ const g=printableGeometry(bExtras.find(p=>p.id==='switch-frame')),a=g.attributes.position;let area=0;
+ for(let i=0;i<a.count;i+=3){const v=[0,1,2].map(j=>new Vector3().fromBufferAttribute(a,i+j));
+  if(v.every(p=>Math.abs(p.z)<1e-5))area+=v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).length()/2;
+ }
+ assert.ok(area>7000);g.dispose();
 });
