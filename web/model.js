@@ -63,7 +63,7 @@ export function createParts() {
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
   const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；含 XIAO 定位槽、底部避空；中框连续外墙防拔及 Type-C 小窗口；13 个一体承托槽、弹性限位舌与防脱肩；v0.9 卡钩含背部三角斜坡加强筋、45° 下沿和 0.70 mm 厚钩头，针对 PLA / 0.4 mm 喷嘴试印；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
+  add('bottom','底板 · 一体底座卡槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'4 mm 底板；含 XIAO 定位槽、底部避空；中框连续外墙防拔及 Type-C 小窗口；v0.14：13 个弧形底座承托槽、触点底部避空、低位焊片窗口、弹性限位舌与防脱肩；v0.9 卡钩含背部三角斜坡加强筋、45° 下沿和 0.70 mm 厚钩头，针对 PLA / 0.4 mm 喷嘴试印；上下板凸沿与中框嵌合。四角 M3 通孔及底面六角螺母槽。底座按凯华 PG151101S11 尺寸图建模，打印卡位仍需试配。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 高中框；四角贯穿螺丝支柱，上下端接纳定位凸沿，单侧 0.30 mm 配合间隙。凸沿负责定位，M3 螺丝负责锁紧。');
   add('top','轴体定位板 · 下凸沿',assembly.top,[0,0,10],'#c5cdd0',2.5,'1.5 mm 轴体板，四角向下局部加厚至 2.5 mm；下侧一圈 1.6 mm 凸沿；四角直径 3.4 mm 通孔。14.2 mm 轴孔为打印试配值，卡爪配合仍待试装。');
   keys.forEach((k,i)=>{
@@ -87,7 +87,7 @@ export function createParts() {
   switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,8.5],'#464b52','14 × 14 mm 轴体外观包络；具体型号与行程待定。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-30,30,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[30,30,7],'#373c43','位于右上摇杆帽下方。');
-  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。底板卡槽承托，两个防脱肩限位；小圆角简化，待打印试配。');
+  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。底板卡槽承托，两个防脱肩限位；真实贯通插槽、端部触点凹口；未标注圆角近似，卡槽单边间隙 0.25 mm，待打印试配。');
   parts.at(-1).socketPositions=switchLocations.map(k=>[k.x,k.y]);
   electronic('case-screws','四角 M3 × 12 螺丝',assembly.bolts,[0,0,0],'#72777d','4 颗 M3 × 12 内六角圆柱头螺丝，从顶板贯穿中框进入底板螺母；不打印。');
   parts.at(-1).level=3.2;

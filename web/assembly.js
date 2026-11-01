@@ -34,17 +34,33 @@ export function buildAssembly(locations){
  };
  try{
   const {socket:s,screwCenters}=assemblySpec;
-  // Stepped outline reconstructed from the dimensioned manufacturer drawing.
-  // Small mould fillets are simplified; fit clearance is a design parameter.
-  const profile=keep(new C([[[-6.36,-6.75],[3.2,-6.75],[4.94,-5.5],[4.94,-2.75],[1.4,-2.75],
-   [.4,-2.45],[-.5,-1.9],[-1.1,-.86],[-6.36,-.86]]]));
-  const socketBody=extrude(profile,s.bodyHeight,s.bottomZ);
-  const socket=union([socketBody,...s.pins.map(([x,y])=>cylinder(1.45,1.2,x,y,6.85))]);
-  const pocket=extrude(keep(profile.offset(s.clearance,'Round',2,24)),3.5,5);
-  // A load-bearing floor and side stops are integral to the bottom shell.
+  // PG151101S11 drawing envelope. Unspecified mould radii are visual approximations.
+  // Keep the mounting envelope separate from the terminal cavities: the holder
+  // must never grow fingers into the socket's electrical contact recesses.
+  const outline=new THREE.Shape();
+  outline.moveTo(-6.36,-1.16);
+  outline.quadraticCurveTo(-6.36,-.86,-6.06,-.86);
+  outline.lineTo(-1.1,-.86);
+  outline.bezierCurveTo(-.4,-.86,-.8,-2.75,1.4,-2.75);
+  outline.lineTo(4.64,-2.75);
+  outline.quadraticCurveTo(4.94,-2.75,4.94,-3.05);
+  outline.lineTo(4.94,-5.01);
+  outline.quadraticCurveTo(4.94,-6.75,3.2,-6.75);
+  outline.lineTo(-6.06,-6.75);
+  outline.quadraticCurveTo(-6.36,-6.75,-6.36,-6.45);
+  outline.closePath();
+  const profile=keep(new C([outline.getPoints(16).map(p=>[p.x,p.y]).reverse()]));
+  const terminalRecesses=union([box(2.4,2.1,1.3,-5.56,-2.54,4.9),box(2.4,2.1,1.3,4.14,-5.08,4.9)]);
+  const socketBody=cut(extrude(profile,s.bodyHeight,s.bottomZ),terminalRecesses);
+  const pinSlots=union(s.pins.map(([x,y])=>box(1.2,.6,3.5,x,y,4.9)));
+  const socket=cut(union([socketBody,...s.pins.map(([x,y])=>cylinder(1.45,1.2,x,y,6.85))]),pinSlots);
+  const pocket=extrude(keep(profile.offset(s.clearance,'Round',2,32)),3.5,5);
+  // Full body support at Z=5; local reliefs below electrical contacts, not a
+  // solid plug underneath them. The remaining floor stays joined to the plate.
   let pod=cut(box(15.8,10.5,4,-.635,-3.805,3),pocket);
-  // Two open solder bays keep the metal tabs and flying wires accessible.
-  pod=cut(pod,union([box(5,3.1,4,-7.15,-2.54,4.65),box(5,3.1,4,6,-5.08,4.65)]));
+  const contactReliefs=union(s.pins.map(([x,y])=>box(2,1.4,2,x,y,3.8)));
+  const solderBays=union([box(5,3.1,4,-7.15,-2.54,4.4),box(5,3.1,4,6,-5.08,4.4)]);
+  pod=cut(pod,union([solderBays,contactReliefs]));
   // Relief slots isolate flexible tongues on the two long edges.
   const relief=[];
   for(const [cx,cy] of [[-3.8,-.66],[1,-6.95]]){
@@ -62,7 +78,7 @@ export function buildAssembly(locations){
    if(direction<0)yz.reverse();
    return move(keep(keep(keep(new C([yz])).extrude(2.6)).rotate([90,0,90])),cx-1.3,0,0);
   };
-  pod=union([pod,hook(-3.8,-.61,-1),hook(1,-7,1)]);
+  pod=cut(union([pod,hook(-3.8,-.61,-1),hook(1,-7,1)]),solderBays);
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,16,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
   let bottom=union([slab(110,110,8,4,-1),ring(103.4,100.2,5.7,1.7,2.9),...locations.map(k=>move(pod,k.x,k.y))]);
@@ -80,7 +96,7 @@ export function buildAssembly(locations){
   const usbOpening=move(keep(keep(usbProfile.extrude(10)).rotate([90,0,0])),bx,-49,usbSpec.centerZ);
   // Internal recess stops 1.2 mm short of the exterior, retaining the PCB shoulders.
   const boardRecess=box(21.6,3.8,5.8,bx,-51.9,3);
-  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening]));
+  bottom=cut(union([bottom,cradle]),union([...screws,...nuts,usbOpening,...locations.map(k=>move(solderBays,k.x,k.y))]));
   // The frame's solid pillars bridge the two plates; all four holes are coaxial.
   const pillars=screwCenters.map(([x,y])=>union([cylinder(4.5,7,x,y,3),box(10,6,7,Math.sign(x)*48,y,3)]));
   let wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,
@@ -107,6 +123,8 @@ export function buildAssembly(locations){
    boardSeatedOverlap:overlap(union([bottom,wall,top]),box(17.8,21,1,bx,by,bz)),
    shellOverlap:overlap(bottom,wall)+overlap(bottom,top)+overlap(wall,top),
    socketHolderOverlap:overlap(bottom,union(socketSolids)),
+   socketContactReliefOverlap:overlap(bottom,union(locations.map(k=>move(contactReliefs,k.x,k.y)))),
+   socketSolderBayOverlap:overlap(bottom,union(locations.map(k=>move(solderBays,k.x,k.y)))),
    upwardRetentionVolume:overlap(bottom,move(union(socketSolids),0,0,.6)),
    downwardSupportVolume:overlap(bottom,move(union(socketSolids),0,0,-.3)),
    boltShellOverlap:overlap(union([bottom,wall,top]),bolts),nutShellOverlap:overlap(bottom,metalNuts)};

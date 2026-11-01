@@ -81,12 +81,15 @@ export function decorate(mesh, part) {
   }
   if(part.id==='sockets') {
     for(const [x,y] of part.socketPositions){
+      // Open pin slots are part of the socket solid. Two contact leaves sit
+      // below the mouth rather than covering it with opaque decorative discs.
       for(const [dx,dy] of [[-3.81,-2.54],[2.54,-5.08]]){
-        cylinder(.95,.18,'#c1a15c',x+dx,y+dy,8.12);
-        cylinder(.55,.2,'#15191c',x+dx,y+dy,8.14);
+        for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,6.25,.8);
       }
-      box(1.6,1.68,.4,'#beaa7d',x-7.16,y-2.54,5.7,.8);
-      box(1.6,1.68,.4,'#beaa7d',x+5.74,y-5.08,5.7,.8);
+      for(const [dx,dy] of [[-7.16,-2.54],[5.74,-5.08]]){
+        box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,5.7,.85);
+        for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,5.93,.8);
+      }
     }
   }
   if(part.id==='top') {

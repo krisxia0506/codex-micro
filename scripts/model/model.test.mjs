@@ -245,3 +245,22 @@ test('midframe has a bounded Type-C window with wall on all four sides',()=>{
  for(const [x,z] of [[-35.5,7.5],[-24.5,7.5],[-30,5.1],[-30,9.6],[-34.8,8.9],[-25.2,5.6]])assert.ok(hits(x,z).length>0,'solid wall must surround USB window');
  material.dispose();
 });
+
+
+test('all socket contact reliefs and solder bays are free of printed material',()=>{
+ assert.ok(Math.abs(assemblyValidation.socketContactReliefOverlap)<1e-6);
+ assert.ok(Math.abs(assemblyValidation.socketSolderBayOverlap)<1e-6);
+});
+
+test('socket pin slots are open through both collars and bodies',()=>{
+ const mesh=new Mesh(parts.find(p=>p.id==='sockets').geometry,new MeshBasicMaterial({side:DoubleSide}));
+ for(const [x,y] of parts.find(p=>p.id==='sockets').socketPositions){
+  for(const [dx,dy] of assemblySpec.socket.pins){
+   const hits=new Raycaster(new Vector3(x+dx,y+dy,9),new Vector3(0,0,-1)).intersectObject(mesh);
+   assert.equal(hits.length,0,'no plastic may fill the pin insertion path');
+   const rim=new Raycaster(new Vector3(x+dx+.9,y+dy,9),new Vector3(0,0,-1)).intersectObject(mesh);
+   assert.ok(Math.abs(rim[0]?.point.z-8.05)<1e-4,'collar remains around the slot');
+  }
+ }
+ mesh.material.dispose();
+});
