@@ -13,25 +13,34 @@ for(const name of await readdir(exportRoot))if(/^codex-micro-v[0-9.]+-(bare|fram
 {
  const dir=new URL(`../../exports/stl/`,import.meta.url);await mkdir(dir,{recursive:true});
  const parts=createParts().filter(p=>p.printable);
- parts.push({id:'socket-fit-coupon',name:'五孔上板与下挂底座试配件',printable:true,geometry:socketFitCoupon()});
+ parts.push({id:'socket-fit-coupon',name:'Choc 下挂底座试配件',printable:true,geometry:socketFitCoupon()});
  const archive={};
  for(const part of parts){
   const geometry=printableGeometry(part),data=exporter.parse(new Mesh(geometry),{binary:true});
   const bytes=new Uint8Array(data.buffer,data.byteOffset,data.byteLength);
   archive[`${part.id}.stl`]=bytes;await writeFile(new URL(`${part.id}.stl`,dir),bytes);geometry.dispose();
  }
- const manifest={version:1,modelVersion:'0.18',variant:'A',units:'mm',dimensions,status:'Unvalidated physical fit; A has no switch-housing latch',screws:'4 x M3 x 12',parts:parts.map(({geometry,...p})=>p)};
+ const manifest={version:1,modelVersion:'0.19',variant:'A',switchFamily:'Deep Sea MINI / Choc V2 reference',socketModel:'CPG135001S30',mechanicalStatus:'Reference trial: exact MINI mould drawing unavailable',units:'mm',dimensions,status:'Unvalidated physical fit; A has no switch-housing latch',screws:'4 x M3 x 12',parts:parts.map(({geometry,...p})=>p)};
  archive['manifest.json']=strToU8(JSON.stringify(manifest,null,2));
- archive['README.txt']=strToU8(`Codex Micro v0.18 / A - five-hole carrier
-Units: mm. Enclosure 110 x 120 mm. Replace bottom, wall and top together. XIAO centre (0,53,5), USB faces +Y.
-Bottom floor 2 mm; rim, nut seats and cradle base locally 4 mm. Carrier 1.5 mm. Socket mounts underneath carrier. Holes: centre 4.4 mm, guides 2.1 mm, socket collars 3.2 mm. Hardware: four M3x12 screws and M3 hex nuts.
-Print bottom flat face on bed; carrier and coupon exported face down with holders upward. PLA / 0.4 mm nozzle / 0.12 mm layers: print coupon first. No switch-housing latch in this design. Physical fit, retention and stiffness unverified.
-XIAO/USB reference geometry is provisional; knob and joystick cap remain solid appearance pieces.
-References: Cherry MX and Kailh PG151101S11 drawings; KiCad MX footprint; MakerWorld BigNum and 20/20 structure references. No third-party CAD redistributed.
+ archive['README.txt']=strToU8(`Codex Micro v0.19 / A - MINI low-profile reference-fit prototype
+Units: mm. Enclosure 110 x 120 mm. XIAO centre (0,53,5), USB faces +Y. Bottom floor 2 mm, local mounts 4 mm. Four M3x12 screws and M3 nuts.
+Requires Kailh CPG135001S30 Choc sockets. OLD CPG151101S11 MX SOCKETS DO NOT FIT. Replace the top carrier, sockets and all keycaps; bottom and midframe are unchanged from v0.18.
+The exact Deep Sea MINI mould drawing has NOT been obtained. Mechanical interface is based on Kailh CPG135301D01 Choc V2 drawing, with MINI 2.8 +/-0.25 mm travel from its official product page. The silent -21 PDF is a DIFFERENT travel variant and was NOT used as the MINI specification. Unspecified mould curves are approximations; no third-party CAD redistributed.
+Carrier holes: centre 5.2 mm, socket collars 3.3 mm, auxiliary relief 1.8 mm. Contacts (-5,-3.8) and (0,-5.9); socket collars (-5,-3.8) and (0,-6). The 0.1 mm difference is accommodated inside the socket slots, not silently changed to match.
+Keycap: height 7.5, cavity 3.8, mounting boss diameter 5.2, cross 4.15 x 1.45, blind depth 2.8, engagement 2.5 mm. Guard inner/outer 5.5/6.5 mm are CHOC V2 REFERENCE dimensions, not confirmed MINI measurements. All print allowances are design assumptions.
+PRINT THE TWO-PIECE FIT KIT FIRST: socket-fit-coupon.stl plus key-1.stl. PLA / 0.4 mm nozzle / 0.12 mm layers. Carrier/coupon exported broad face down and holders up. Keycap is hollow: inspect slicer bridges/support and do not fill the blind mounting hole with support. Seat the Choc socket, insert the switch, then fit the cap. Check retaining shoulders, three pin clearances, light seating force, full return and bottom-out clearance before printing the whole set. Do not force a tight cap; printed fit and strength remain unverified.
+A does not latch the switch housing. XIAO/USB geometry is provisional; knob and joystick cap are solid appearance pieces.
+Sources:
+https://kailhswitch.net/products/kailh-deep-sea-silent-min-low-profile-keyboard-switch
+https://www.kailh.net/pages/product-datasheet
+https://raw.githubusercontent.com/keyboardio/keyswitch_documentation/master/datasheets/Kailh/CPG135001S30-Choc-Socket.pdf
 `);
+ const fit=zipSync({'socket-fit-coupon.stl':archive['socket-fit-coupon.stl'],'key-1.stl':archive['key-1.stl'],'README.txt':archive['README.txt']});
+ await writeFile(new URL('codex-micro-mini-fit.zip',publicDir),fit);
+ await writeFile(new URL('../../exports/codex-micro-v0.19-mini-fit.zip',import.meta.url),fit);
  const zip=zipSync(archive);
  await writeFile(new URL(`codex-micro-stl.zip`,publicDir),zip);
- await writeFile(new URL(`../../exports/codex-micro-v0.18-stl.zip`,import.meta.url),zip);
+ await writeFile(new URL(`../../exports/codex-micro-v0.19-stl.zip`,import.meta.url),zip);
  await writeFile(new URL('manifest.json',dir),archive['manifest.json']);
  console.log(`A: exported ${parts.length} STL files`);
  for(const p of parts)p.geometry.dispose();

@@ -1,4 +1,4 @@
-import { mxSpec } from './mx.js';
+import { switchSpec } from './switch-spec.js';
 import * as THREE from 'three';
 import { xiaoPosition, xiaoRotation } from './harness.js';
 import { buildAssembly, assemblySpec, hollowKeycap, keycapSpec } from './assembly.js';
@@ -64,15 +64,15 @@ export function createParts() {
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
   const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.18 底板主体减至 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。');
+  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.19 底板主体减至 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 中框，沿用四角 M3 紧固。');
-  add('top','五孔承托上板 · 下挂轴座',assembly.top,[0,0,10],'#c5cdd0',2.5,'每键五孔：中心 4.4 mm、定位柱 2.1 mm × 2、底座凸台 3.2 mm × 2；板厚 1.5 mm。底座从下方装入。采用 A 方案，轴壳外露；不提供轴壳卡爪锁止。');
+  add('top','MINI 矮轴承托上板 · Choc 轴座',assembly.top,[0,0,10],'#c5cdd0',2.5,'中心孔 5.2 mm、底座凸台孔 3.3 mm × 2、辅助脚避空 1.8 mm；板厚 1.5 mm。Choc V2 参考孔位，深海 MINI 待实物试配。底座从下方装入。采用 A 方案，轴壳外露；不提供轴壳卡爪锁止。');
   keys.forEach((k,i)=>{
     const mounts=k.name==='语音键'?[-10,10]:[0];
     const exterior=keycap(k.w,k.d,keycapSpec.height);
     const fitted=hollowKeycap(exterior,k.w,k.d,mounts);exterior.dispose();
     add(`key-${i+1}`,k.name,fitted.geometry,[k.x,k.y,keycapSpec.assembledZ],k.color,4,
-      `中空键帽，底部空腔深 4.7 mm；${mounts.length} 个 MX 十字盲孔（跨度 4.30、臂宽 1.30、深 4.20 mm），孔口倒角、外侧承力柱。打印试配尺寸，松紧和全行程需实测。`);
+      `中空键帽，底部空腔深 3.8 mm；${mounts.length} 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。`);
     Object.assign(parts.at(-1),{mountXs:mounts,keycapValidation:fitted.validation});
   });
   const knob=new THREE.CylinderGeometry(9,9,12,48); knob.rotateX(Math.PI/2); knob.translate(0,0,6);
@@ -87,10 +87,10 @@ export function createParts() {
   };
   electronic('xiao','XIAO Sense Plus',plate(17.8,21,1),[...xiaoPosition],'#183c3b','XIAO nRF52840 Sense Plus，官方板外形 21 × 17.8 mm；顶部居中（中心 0, 53 mm）；USB-C 朝向外壳 +Y 外侧；元件高度、安装间隙为示意。USB-C、麦克风及电源电路在开发板上。');
   parts.at(-1).rotationZ=xiaoRotation;
-  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(14,14,7),[k.x,k.y,mxSpec.carrierTop],'#464b52','14 × 14 mm 轴体外观包络；含底部中心柱、两定位柱及两金属脚示意；按 MX 标称布局核对。'));
+  switchLocations.forEach((k,i)=>electronic(`switch-${i+1}`,`SW${i+1} · 机械轴体`,cap(13.95,13.95,5.3),[k.x,k.y,switchSpec.carrierTop],'#4d77b6','深海 MINI 矮轴试配包络：Choc V2 参考机械尺寸；含圆形护壁、中心柱、两金属脚。总行程 2.8±0.25 mm；未取得该变体完整机械图。'));
   electronic('encoder','ENC1 · 旋转编码器',cap(12,12,8),[-30,30,7],'#b5b7bb','位于旋钮下方，包含外壳与转轴示意。');
   electronic('stick-module','JOY1 · 摇杆模块',cap(18,18,8),[30,30,7],'#373c43','位于右上摇杆帽下方。');
-  electronic('sockets','Kailh MX 底座组',assembly.sockets,[0,0,0],'#30343a','PG151101S11 / CPG151101S11：主体高 1.85 mm，焊脚总跨度 14.50 mm，插孔横向 6.35 mm、纵向错位 2.54 mm。上板下挂卡槽与防脱钩固定；真实贯通插槽、端部触点凹口；未标注圆角近似，卡槽单边间隙 0.25 mm，待打印试配。');
+  electronic('sockets','Kailh Choc 底座组',assembly.sockets,[0,0,0],'#30343a','CPG135001S30：主体高 1.85 mm，焊脚总跨度 13.15 mm，插孔横向 5.00 mm、纵向错位 2.20 mm。不能使用旧 MX 底座。上板下挂卡槽与防脱钩固定；真实贯通插槽、端部触点凹口；未标注圆角近似，卡槽单边间隙 0.25 mm，待打印试配。');
   parts.at(-1).socketPositions=switchLocations.map(k=>[k.x,k.y]);
   electronic('case-screws',`四角 M3 × 12 螺丝`,assembly.bolts,[0,0,0],'#72777d',`4 颗 M3 × 12 螺丝，四角同轴锁紧；不打印。`);
   parts.at(-1).level=3.2;

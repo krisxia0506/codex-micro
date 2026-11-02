@@ -72,16 +72,16 @@ test('shell plates, locating lips and socket mounts are connected solids',()=>{
  assert.equal(assemblyValidation.topComponents,1);
  assert.ok(Math.abs(assemblyValidation.shellOverlap)<1e-6);
  assert.ok(Math.abs(assemblyValidation.socketHolderOverlap)<1e-6);
- assert.ok(assemblyValidation.upwardRetentionVolume>1,'socket must meet retaining shoulders on removal');
- assert.ok(assemblyValidation.downwardSupportVolume>1,'socket must meet floor under insertion load');
+ assert.ok(assemblyValidation.upwardRetentionVolume>1,'socket must meet carrier when pushed upward');
+ assert.ok(assemblyValidation.downwardSupportVolume>1,'socket must meet retaining shoulders when pulled downward');
 });
 test('four coaxial M3 fasteners and nuts clear printed material',()=>{
  assert.equal(assemblySpec.screwCenters.length,4);
  assert.ok(Math.abs(assemblyValidation.boltShellOverlap)<1e-6);
  assert.ok(Math.abs(assemblyValidation.nutShellOverlap)<1e-6);
  assert.ok(Math.abs((assemblySpec.frameInner-assemblySpec.lipOuter)/2-.3)<1e-6);
- assert.equal(assemblySpec.socket.pins[1][0]-assemblySpec.socket.pins[0][0],6.35);
- assert.equal(assemblySpec.socket.pins[1][1]-assemblySpec.socket.pins[0][1],2.54);
+ assert.equal(assemblySpec.socket.pins[1][0]-assemblySpec.socket.pins[0][0],5);
+ assert.ok(Math.abs(assemblySpec.socket.pins[1][1]-assemblySpec.socket.pins[0][1]+2.2)<1e-6);
 });
 
 test('switch plate exports face-down with broad bed contact',()=>{
@@ -136,10 +136,11 @@ test('updated flying wires clear the integral socket mounts and enclosure',async
  }finally{for(const o of owned.reverse())o.delete();}
 });
 
-test('all keycaps have connected hollow shells and aligned MX mounts',()=>{
+test('MINI trial caps clear the cross, dust wall and stationary housing at bottom-out',()=>{
  for(const p of parts.filter(p=>p.id.startsWith('key-'))){
   const v=p.keycapValidation;assert.equal(v.components,1);assert.ok(Math.abs(v.stemOverlap)<1e-6);
-  assert.ok(v.engagement>=2.3-1e-6);assert.ok(v.roofThickness>=1.5);
+  assert.ok(Math.abs(v.guardOverlap)<1e-6);assert.ok(Math.abs(v.bottomOutOverlap)<1e-6);
+  assert.ok(v.engagement>=2.5-1e-6);assert.ok(v.roofThickness>=1.5);
   assert.equal(v.mounts,p.id==='key-11'?2:1);
  }
  assert.deepEqual(parts.find(p=>p.id==='key-11').mountXs,[-10,10]);
@@ -151,9 +152,9 @@ test('MX holes open from underneath and stop below the keycap roof',()=>{
   const mesh=new Mesh(p.geometry,material);
   const underside=(x,y)=>new Raycaster(new Vector3(x,y,-1),new Vector3(0,0,1)).intersectObject(mesh)[0]?.point.z;
   for(const x of p.mountXs){
-   for(const [dx,dy] of [[0,0],[1.8,0],[0,1.8]])assert.ok(Math.abs(underside(x+dx,dy)-4.2)<1e-4,`${p.id} blind cross hole`);
-   assert.ok(Math.abs(underside(x+1.3,1.3))<1e-4,`${p.id} material between cross arms`);
-   assert.ok(Math.abs(underside(x+5,0)-4.7)<1e-4,`${p.id} underside cavity`);
+   for(const [dx,dy] of [[0,0],[1.8,0],[0,1.8]])assert.ok(Math.abs(underside(x+dx,dy)-2.8)<1e-4,`${p.id} blind cross hole`);
+   assert.ok(Math.abs(underside(x+1.2,1.3))<1e-4,`${p.id} material between cross arms`);
+   assert.ok(Math.abs(underside(x+5,0)-3.8)<1e-4,`${p.id} underside cavity`);
   }
  }
  material.dispose();
@@ -237,15 +238,15 @@ test('socket pin slots are open through both collars and bodies',()=>{
 
 
 
-test('five-pin switch insertion, carrier and fasteners clear',()=>{
+test('MINI reference switch insertion, carrier and fasteners clear',()=>{
  const ps=createParts(),v={...assemblyValidation};
  for(const field of ['pinShellOverlap','pinSocketOverlap','insertionOverlap','switchBodyOverlap','socketHolderOverlap','shellOverlap','boltShellOverlap','nutShellOverlap'])
   assert.ok(Math.abs(v[field])<1e-6,`${field}: ${v[field]}`);
  assert.equal(v.topComponents,1);assert.equal(v.bottomComponents,1);
  const top=ps.find(p=>p.id==='top'),mesh=new Mesh(top.geometry,new MeshBasicMaterial({side:DoubleSide}));mesh.position.fromArray(top.position);mesh.updateMatrixWorld();
- // Independent MX drawing landmarks, not taken from the hole generator.
- for(const [x,y] of ps.find(p=>p.id==='sockets').socketPositions)for(const [dx,dy] of [[0,0],[-5.08,0],[5.08,0],[-3.81,2.54],[2.54,5.08]]){
-  assert.equal(new Raycaster(new Vector3(x+dx,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh).length,0,'five holes must pass through carrier and holder');
+ // Independent Choc V2/socket drawing landmarks, not taken from the hole generator.
+ for(const [x,y] of ps.find(p=>p.id==='sockets').socketPositions)for(const [dx,dy] of [[0,0],[5,5.15],[-5,-3.8],[0,-6]]){
+  assert.equal(new Raycaster(new Vector3(x+dx,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh).length,0,'mounting holes must pass through carrier and holder');
  }
  mesh.material.dispose();for(const p of ps)p.geometry.dispose();
 });

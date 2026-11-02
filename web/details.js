@@ -1,4 +1,4 @@
-import { mxSpec, socketTerminals } from './mx.js';
+import { switchSpec, socketTerminals } from './switch-spec.js';
 import * as THREE from 'three';
 import { keycapSpec } from './assembly.js';
 import { capsule, usbSpec, usbShellGeometry } from './usb.js';
@@ -54,11 +54,13 @@ export function decorate(mesh, part) {
     for(let i=0;i<4;i++){const angle=Math.PI/4+i*Math.PI/2;const mark=box(3,.6,.15,'#101314',Math.cos(angle)*4.7,Math.sin(angle)*4.7,9.4);mark.rotation.z=angle;}
   }
   if(part.id.startsWith('switch-')) {
-    box(keycapSpec.stemSpan,keycapSpec.stemBar,4.6,'#caa6db',0,0,9.3);
-    box(keycapSpec.stemBar,keycapSpec.stemSpan,4.6,'#caa6db',0,0,9.3);
-    cylinder(mxSpec.postDiameter/2,3.3,'#454b50',0,0,-1.65);
-    for(const [x,y] of mxSpec.guides)cylinder(.8,3.3,'#454b50',x,y,-1.65);
-    for(const [x,y] of mxSpec.pins)box(1.1,.4,3.3,'#caa35f',x,y,-1.65,.8);
+    box(keycapSpec.stemSpan,keycapSpec.stemBar,3.7,'#e6e5df',0,0,7.15);
+    box(keycapSpec.stemBar,keycapSpec.stemSpan,3.7,'#e6e5df',0,0,7.15);
+    const wall=new THREE.Shape();wall.absarc(0,0,3.25,0,Math.PI*2,false);
+    const bore=new THREE.Path();bore.absarc(0,0,2.75,0,Math.PI*2,true);wall.holes.push(bore);
+    add(new THREE.ExtrudeGeometry(wall,{depth:3.1,bevelEnabled:false,curveSegments:48}),'#e6e5df',[0,0,5.9]);
+    cylinder(switchSpec.postDiameter/2,3.3,'#4d77b6',0,0,-1.65);
+    for(const [x,y] of switchSpec.pins)box(.8,.25,3,'#caa35f',x,y,-1.5,.8);
   }
   if(part.id==='encoder') {
     cylinder(3,4,'#c7cbd0',0,0,9);
@@ -86,7 +88,7 @@ export function decorate(mesh, part) {
     for(const [x,y] of part.socketPositions){
       // Open pin slots are part of the socket solid. Two contact leaves sit
       // below the mouth rather than covering it with opaque decorative discs.
-      for(const [dx,dy] of mxSpec.pins){
+      for(const [dx,dy] of switchSpec.socketPins){
         for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,9.4,.8);
       }
       for(const [dx,dy] of socketTerminals){
