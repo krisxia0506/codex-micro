@@ -11,7 +11,7 @@ export const assemblySpec={
  screwDiameter:3.4,nutAcrossFlats:5.8,nutDepth:2.6,
  lipOuter:103.4,lipInner:100.2,lipHeight:1.6,frameInner:104,
  socket:{model:'CPG135001S30',bodyWidth:9.95,baseWidth:9.55,bodyDepth:6.85,bodyHeight:1.85,
-  overallWidth:13.15,collarHeight:1.2,pins:switchSpec.socketPins,clearance:.25,bottomZ:switchSpec.socketBottom},
+  overallWidth:13.15,collarHeight:1.2,collarDiameter:2.9,flangeHeight:.25,pins:switchSpec.socketPins,clearance:.25,bottomZ:switchSpec.socketBottom},
 };
 // Every temporary WASM object is freed after converting the resulting solids.
 export function buildAssembly(locations){
@@ -48,8 +48,15 @@ export function buildAssembly(locations){
   const profile=keep(new C([outline.getPoints(16).map(p=>[p.x,p.y]).reverse()]));
   const pinSlots=union(s.pins.map(([x,y])=>box(1.2,.8,3.5,x,y,8.05)));
   const contactRecesses=union([box(2.3,2.1,1.2,-6.6,-3.8,8.05),box(2.3,2.1,1.2,1.4,-6,8.05)]);
-  const socket=cut(union([cut(extrude(profile,1.85,8.15),contactRecesses),
-   ...s.pins.map(([x,y])=>cylinder(1.45,1.2,x,y,10))]),pinSlots);
+  // Drawing: bottom width 9.55, upper rim 9.95. Rim thickness is unlabelled;
+  // 0.25 mm is a modelling assumption, NOT a manufacturer dimension.
+  const baseProfile=keep(profile.intersect(keep(keep(C.square([s.baseWidth,20],true)).translate([-2.6,-4.9]))));
+  const shoulderZ=s.bottomZ+s.bodyHeight-s.flangeHeight;
+  const socketBody=union([extrude(baseProfile,s.bodyHeight,s.bottomZ),extrude(profile,s.flangeHeight,shoulderZ)]);
+  const socket=cut(union([cut(socketBody,contactRecesses),
+   ...s.pins.map(([x,y])=>cylinder(s.collarDiameter/2,s.collarHeight,x,y,s.bottomZ+s.bodyHeight))]),pinSlots);
+  // Keep the pocket at the maximum rim envelope through the full insertion path.
+  // Shrinking its entry to the base width would prevent the wider rim from entering.
   const pocket=extrude(keep(profile.offset(s.clearance,'Round',2,32)),4,6.8);
   let pod=cut(extrude(keep(profile.offset(1.5,'Round',2,32)),3.1,7.1),pocket);
   const solderBays=union(socketTerminals.map(([x,y])=>box(4,3.1,4,x,y,6.8)));

@@ -274,3 +274,12 @@ test('exploded switch group separates above carrier and below caps',()=>{
   }
  }
 });
+
+test('1350 socket lower body is inset from its wider insertion-side rim',()=>{
+ const mesh=new Mesh(parts.find(p=>p.id==='sockets').geometry,new MeshBasicMaterial({side:DoubleSide}));
+ const [x,y]=parts.find(p=>p.id==='sockets').socketPositions[0];
+ const edge=z=>new Raycaster(new Vector3(x-10,y-2.5,z),new Vector3(1,0,0)).intersectObject(mesh)[0]?.point.x-x;
+ assert.ok(Math.abs(edge(8.5)+7.375)<1e-4,'9.55 mm lower body left edge');
+ assert.ok(Math.abs(edge(9.9)+7.575)<1e-4,'9.95 mm upper rim left edge');
+ mesh.material.dispose();
+});
