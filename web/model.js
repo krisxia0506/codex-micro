@@ -64,7 +64,7 @@ export function createParts() {
   const switchLocations=keys.flatMap(k=>k.name==='语音键'?[{x:-10,y:k.y},{x:10,y:k.y}]:[k]);
   const assembly=buildAssembly(switchLocations);assemblyValidation=assembly.validation;
   fitCoupon?.dispose();fitCoupon=assembly.coupon;
-  add('bottom','底板 · 开发板定位槽',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.20 底板主体减至 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。');
+  add('bottom','底板 · 13 键位承托柱',assembly.bottom,[0,0,0],'#c8cbd0',0,'v0.21 每个键位增加轴座承托柱：相对轴心 (-2.5, -4.9) mm，内底面以上高 7 mm，顶面 Ø2.8、根部 Ø5 mm；距轴座底面 0.15 mm。底板主体 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。');
   add('wall','中框 · 螺丝支柱',assembly.wall,[0,0,3],'#e0e2e4',1,'7 mm 中框，沿用四角 M3 紧固。');
   add('top','MINI 矮轴承托上板 · Choc 轴座',assembly.top,[0,0,10],'#c5cdd0',2.5,'中心孔 5.2 mm、底座凸台孔 3.3 mm × 2、辅助脚避空 1.8 mm；板厚 1.5 mm。Choc V2 参考孔位，深海 MINI 待实物试配。底座从下方装入。采用 A 方案，轴壳外露；不提供轴壳卡爪锁止。');
   keys.forEach((k,i)=>{

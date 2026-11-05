@@ -110,8 +110,8 @@ const ray=new THREE.Raycaster(), pointer=new THREE.Vector2(); let down;
 host.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]); host.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return; const r=host.getBoundingClientRect(); pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(pointer,camera); const hit=ray.intersectObjects(meshes.filter(m=>m.visible))[0]; if(hit){let object=hit.object;while(!object.userData.part&&object.parent)object=object.parent;select(object.userData.part);}});
 function save(data,name){const url=URL.createObjectURL(new Blob([data]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('#download').onclick=()=>{if(!selected.printable)return;const mesh=new THREE.Mesh(printableGeometry(selected));const data=new STLExporter().parse(mesh,{binary:true});save(data,`codex-micro-${selected.id}-mm.stl`);mesh.geometry.dispose();};
-$('#download-coupon').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-mini-fit.zip`;a.download='codex-micro-v0.20-mini-fit.zip';a.click();};
-$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-stl.zip`;a.download=`codex-micro-v0.20-stl.zip`;a.click();};
+$('#download-coupon').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-mini-fit.zip`;a.download='codex-micro-v0.21-mini-fit.zip';a.click();};
+$('#download-all').onclick=()=>{const a=document.createElement('a');a.href=`${import.meta.env.BASE_URL}codex-micro-stl.zip`;a.download=`codex-micro-v0.21-stl.zip`;a.click();};
 new ResizeObserver(()=>{const {width,height}=host.getBoundingClientRect();renderer.setSize(width,height); labels.setSize(width,height); camera.aspect=width/height;camera.updateProjectionMatrix();}).observe(host);
 const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
 leaders.classList.add('label-leaders');host.appendChild(leaders);

@@ -20,13 +20,14 @@ for(const name of await readdir(exportRoot))if(/^codex-micro-v[0-9.]+-(bare|fram
   const bytes=new Uint8Array(data.buffer,data.byteOffset,data.byteLength);
   archive[`${part.id}.stl`]=bytes;await writeFile(new URL(`${part.id}.stl`,dir),bytes);geometry.dispose();
  }
- const manifest={version:1,modelVersion:'0.20',variant:'A',switchFamily:'Deep Sea MINI / Choc V2 reference',socketModel:'CPG135001S30',socketDimensions:assemblySpec.socket,mechanicalStatus:'Reference trial: exact MINI mould drawing unavailable',units:'mm',dimensions,status:'Unvalidated physical fit; A has no switch-housing latch',screws:'4 x M3 x 12',parts:parts.map(({geometry,...p})=>p)};
+ const manifest={version:1,modelVersion:'0.21',variant:'A',switchFamily:'Deep Sea MINI / Choc V2 reference',socketModel:'CPG135001S30',socketDimensions:assemblySpec.socket,socketSupport:assemblySpec.socketSupport,mechanicalStatus:'Reference trial: exact MINI mould drawing unavailable',units:'mm',dimensions,status:'Unvalidated physical fit; A has no switch-housing latch',screws:'4 x M3 x 12',parts:parts.map(({geometry,...p})=>p)};
  archive['manifest.json']=strToU8(JSON.stringify(manifest,null,2));
- archive['README.txt']=strToU8(`Codex Micro v0.20 / A - MINI low-profile reference-fit prototype
+ archive['README.txt']=strToU8(`Codex Micro v0.21 / A - MINI low-profile reference-fit prototype
 Units: mm. Enclosure 110 x 120 mm. XIAO centre (0,53,5), USB faces +Y. Bottom floor 2 mm, local mounts 4 mm. Four M3x12 screws and M3 nuts.
-Requires Kailh CPG135001S30 Choc sockets. OLD CPG151101S11 MX SOCKETS DO NOT FIT. Replace the top carrier, sockets and all keycaps; bottom and midframe are unchanged from v0.18.
+Requires Kailh CPG135001S30 Choc sockets. OLD CPG151101S11 MX SOCKETS DO NOT FIT. Replace the top carrier, sockets and all keycaps; v0.21 bottom adds 13 socket support pedestals; midframe unchanged.
 The exact Deep Sea MINI mould drawing has NOT been obtained. Mechanical interface is based on Kailh CPG135301D01 Choc V2 drawing, with MINI 2.8 +/-0.25 mm travel from its official product page. The silent -21 PDF is a DIFFERENT travel variant and was NOT used as the MINI specification. Unspecified mould curves are approximations; no third-party CAD redistributed.
 1350 socket drawing KHA-PG1350-005EN: upper width 9.95 +/-0.15, lower width 9.55 +/-0.05, depth 6.85 +/-0.05, body height 1.85 +/-0.1, overall terminal span 13.15 +/-0.15, collar diameter 2.90 +/-0.05, total height 3.05 +/-0.05. Rim thickness 0.25 is an UNDIMENSIONED modelling assumption. Pocket uses maximum upper profile plus 0.25 mm per side through the insertion path (overall pocket envelope 10.45 x 7.35); do not constrict entry to lower width. Collar relief 3.3 mm is a PRINT allowance, not the drawing PCB hole 3.0 mm.
+Bottom supports: one per switch, offset (-2.5,-4.9) mm from switch centre. Interior floor Z=1, support top Z=8, socket underside Z=8.15: height above floor 7 mm, nominal gap 0.15 mm. Top diameter 2.8 mm, tapered foot diameter 5 mm. The top touches insulating central bridge, not contacts. Gap is a design allowance, NOT verified print tolerance. Check seating with enclosure screws lightly tightened; never force a warped plate closed.
 Carrier holes: centre 5.2 mm, socket collars 3.3 mm, auxiliary relief 1.8 mm. Contacts (-5,-3.8) and (0,-5.9); socket collars (-5,-3.8) and (0,-6). The 0.1 mm difference is accommodated inside the socket slots, not silently changed to match.
 Keycap: height 7.5, cavity 3.8, mounting boss diameter 5.2, cross 4.15 x 1.45, blind depth 2.8, engagement 2.5 mm. Guard inner/outer 5.5/6.5 mm are CHOC V2 REFERENCE dimensions, not confirmed MINI measurements. All print allowances are design assumptions.
 PRINT THE TWO-PIECE FIT KIT FIRST: socket-fit-coupon.stl plus key-1.stl. PLA / 0.4 mm nozzle / 0.12 mm layers. Carrier/coupon exported broad face down and holders up. Keycap is hollow: inspect slicer bridges/support and do not fill the blind mounting hole with support. Seat the Choc socket, insert the switch, then fit the cap. Check retaining shoulders, three pin clearances, light seating force, full return and bottom-out clearance before printing the whole set. Do not force a tight cap; printed fit and strength remain unverified.
@@ -39,10 +40,10 @@ https://raw.githubusercontent.com/keyboardio/keyswitch_documentation/master/data
 `);
  const fit=zipSync({'socket-fit-coupon.stl':archive['socket-fit-coupon.stl'],'key-1.stl':archive['key-1.stl'],'README.txt':archive['README.txt']});
  await writeFile(new URL('codex-micro-mini-fit.zip',publicDir),fit);
- await writeFile(new URL('../../exports/codex-micro-v0.20-mini-fit.zip',import.meta.url),fit);
+ await writeFile(new URL('../../exports/codex-micro-v0.21-mini-fit.zip',import.meta.url),fit);
  const zip=zipSync(archive);
  await writeFile(new URL(`codex-micro-stl.zip`,publicDir),zip);
- await writeFile(new URL(`../../exports/codex-micro-v0.20-stl.zip`,import.meta.url),zip);
+ await writeFile(new URL(`../../exports/codex-micro-v0.21-stl.zip`,import.meta.url),zip);
  await writeFile(new URL('manifest.json',dir),archive['manifest.json']);
  console.log(`A: exported ${parts.length} STL files`);
  for(const p of parts)p.geometry.dispose();

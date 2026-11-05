@@ -8,6 +8,7 @@ const kernel=await Module({locateFile:()=>wasmURL.protocol==='file:'?decodeURICo
 kernel.setup();
 export const assemblySpec={
  screwCenters:[[-46,-46],[46,-46],[-46,46],[46,46]],
+ socketSupport:{offset:[-2.5,-4.9],floorZ:1,topZ:8,gap:.15,topDiameter:2.8,footDiameter:5},
  screwDiameter:3.4,nutAcrossFlats:5.8,nutDepth:2.6,
  lipOuter:103.4,lipInner:100.2,lipHeight:1.6,frameInner:104,
  socket:{model:'CPG135001S30',bodyWidth:9.95,baseWidth:9.55,bodyDepth:6.85,bodyHeight:1.85,
@@ -80,6 +81,14 @@ export function buildAssembly(locations){
   // 2 mm floor; retain the original mating height only at rim and fasteners.
   let bottom=union([slab(110,110,8,2,-1),ring(110,100.2,8,2.1,.9),
    ...screwCenters.map(([x,y])=>cylinder(5.6,2.1,x,y,.9)),ring(103.4,100.2,5.7,1.7,2.9)]);
+  // Central insulating bridge between the two contacts. Avoid both insertion
+  // slots, underside contact recesses, solder bays and the retaining tongues.
+  const support=assemblySpec.socketSupport;
+  const supportLocal=union([
+   move(keep(M.cylinder(2.1,support.footDiameter/2,support.topDiameter/2,48)),...support.offset,.9),
+   cylinder(support.topDiameter/2,support.topZ-2.9,...support.offset,2.9)]);
+  const supports=union(locations.map(k=>move(supportLocal,k.x,k.y)));
+  bottom=union([bottom,supports]);
   // Cradle with exterior stops supports the board edges and leaves an underside relief.
   const [bx,by,bz]=xiaoPosition;
   let cradle=cut(box(21,22,3.2,bx,by-.6,3),box(18.4,21.6,3,bx,by,5));
@@ -124,6 +133,10 @@ export function buildAssembly(locations){
   const insertionSweep=union(Array.from({length:6},(_,i)=>move(pinsInAssembly,0,0,i*.2)));
   result.validation={bottomComponents:bottom.decompose().map(keep).length,wallComponents:wall.decompose().map(keep).length,
    topComponents:top.decompose().map(keep).length,
+   supportCount:locations.length,
+   supportSocketOverlap:overlap(supports,union(socketSolids)),
+   supportContactOverlap:overlap(supportLocal,union([pinSlots,contactRecesses,solderBays])),
+   supportCatchVolumes:locations.map((k,i)=>overlap(supports,move(socketSolids[i],0,0,-.2))),
    postSocketOverlap:overlap(socket,plasticPins),plasticSocketOverlap:overlap(socket,plasticPins),contactSocketOverlap:overlap(socket,contacts),
    pinShellOverlap:overlap(allShell,pinsInAssembly),pinSocketOverlap:overlap(union(socketSolids),pinsInAssembly),
    insertionOverlap:overlap(allShell,insertionSweep),

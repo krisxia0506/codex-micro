@@ -283,3 +283,19 @@ test('1350 socket lower body is inset from its wider insertion-side rim',()=>{
  assert.ok(Math.abs(edge(9.9)+7.575)<1e-4,'9.95 mm upper rim left edge');
  mesh.material.dispose();
 });
+
+test('all 13 bottom pedestals catch sockets without touching contacts or preloading',()=>{
+ const v=assemblyValidation;
+ assert.equal(v.supportCount,13);
+ assert.ok(Math.abs(v.supportSocketOverlap)<1e-6);
+ assert.ok(Math.abs(v.supportContactOverlap)<1e-6);
+ assert.equal(v.supportCatchVolumes.length,13);
+ for(const [i,volume] of v.supportCatchVolumes.entries())assert.ok(volume>.2,`socket ${i+1} must land on its pedestal`);
+ const bottom=parts.find(p=>p.id==='bottom');
+ const mesh=new Mesh(bottom.geometry,new MeshBasicMaterial({side:DoubleSide}));
+ for(const [x,y] of parts.find(p=>p.id==='sockets').socketPositions){
+  const hit=new Raycaster(new Vector3(x-2.5,y-4.9,9),new Vector3(0,0,-1)).intersectObject(mesh)[0];
+  assert.ok(Math.abs(hit.point.z-8)<1e-5,'assembled support top Z=8, height above floor=7');
+ }
+ mesh.material.dispose();
+});
