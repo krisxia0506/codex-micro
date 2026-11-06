@@ -8,11 +8,11 @@ const kernel=await Module({locateFile:()=>wasmURL.protocol==='file:'?decodeURICo
 kernel.setup();
 export const assemblySpec={
  screwCenters:[[-46,-46],[46,-46],[-46,46],[46,46]],
- socketSupport:{offset:[-2.5,-4.9],floorZ:1,topZ:8,gap:.15,topDiameter:2.8,footDiameter:5},
+ socketSupport:{offset:[-2.5,-4.9],floorZ:1,topZ:switchSpec.socketBottom-.15,gap:.15,topDiameter:2.8,footDiameter:5},
  screwDiameter:3.4,nutAcrossFlats:5.8,nutDepth:2.6,
  lipOuter:103.4,lipInner:100.2,lipHeight:1.6,frameInner:104,
  socket:{model:'CPG135001S30',bodyWidth:9.95,baseWidth:9.55,bodyDepth:6.85,bodyHeight:1.85,
-  overallWidth:13.15,collarHeight:1.2,collarDiameter:2.9,flangeHeight:.25,pins:switchSpec.socketPins,clearance:.25,bottomZ:switchSpec.socketBottom},
+  overallWidth:13.15,collarHeight:1.2,collarDiameter:2.9,flangeHeight:.25,pins:switchSpec.socketPins,clearance:.5,bottomZ:switchSpec.socketBottom},
 };
 // Every temporary WASM object is freed after converting the resulting solids.
 export function buildAssembly(locations){
@@ -37,6 +37,7 @@ export function buildAssembly(locations){
  };
  try{
   const {socket:s,screwCenters}=assemblySpec;
+  const recess=switchSpec.recessDepth,nominalSocketBottom=s.bottomZ+recess;
   // CPG135001S30 insertion-side profile: 9.95 x 6.85 mm; rounded waist
   // and contact cavity shape are approximate where the drawing is unlabelled.
   const outline=new THREE.Shape();
@@ -52,30 +53,34 @@ export function buildAssembly(locations){
   // Drawing: bottom width 9.55, upper rim 9.95. Rim thickness is unlabelled;
   // 0.25 mm is a modelling assumption, NOT a manufacturer dimension.
   const baseProfile=keep(profile.intersect(keep(keep(C.square([s.baseWidth,20],true)).translate([-2.6,-4.9]))));
-  const shoulderZ=s.bottomZ+s.bodyHeight-s.flangeHeight;
-  const socketBody=union([extrude(baseProfile,s.bodyHeight,s.bottomZ),extrude(profile,s.flangeHeight,shoulderZ)]);
-  const socket=cut(union([cut(socketBody,contactRecesses),
-   ...s.pins.map(([x,y])=>cylinder(s.collarDiameter/2,s.collarHeight,x,y,s.bottomZ+s.bodyHeight))]),pinSlots);
+  const shoulderZ=nominalSocketBottom+s.bodyHeight-s.flangeHeight;
+  const socketBody=union([extrude(baseProfile,s.bodyHeight,nominalSocketBottom),extrude(profile,s.flangeHeight,shoulderZ)]);
+  let socket=cut(union([cut(socketBody,contactRecesses),
+   ...s.pins.map(([x,y])=>cylinder(s.collarDiameter/2,s.collarHeight,x,y,nominalSocketBottom+s.bodyHeight))]),pinSlots);
   // Keep the pocket at the maximum rim envelope through the full insertion path.
   // Shrinking its entry to the base width would prevent the wider rim from entering.
   const pocket=extrude(keep(profile.offset(s.clearance,'Round',2,32)),4,6.8);
   let pod=cut(extrude(keep(profile.offset(1.5,'Round',2,32)),3.1,7.1),pocket);
   const solderBays=union(socketTerminals.map(([x,y])=>box(4,3.1,4,x,y,6.8)));
   const relief=[];
-  for(const [cx,cy] of [[-5,-1.225],[0,-8.575]])for(const dx of [-1.65,1.65])relief.push(box(.65,3.1,3.1,cx+dx,cy,7.1));
+  for(const [cx,cy] of [[-5,-.975],[0,-8.825]])for(const dx of [-1.65,1.65])relief.push(box(.65,3.1,3.1,cx+dx,cy,7.1));
   pod=cut(pod,union([...relief,solderBays]));
   const hook=(cx,boundary,direction)=>{
-   const yz=[[-1.5,10.1],[0,10.1],[0,8.05],[.5,8.05],[.5,7.35],[0,7.0],[-1.5,8.2]]
+   const yz=[[-1.5,10.1],[0,10.1],[0,8.05],[.65,8.05],[.65,7.35],[0,7.0],[-1.5,8.2]]
     .map(([d,z])=>[boundary+direction*d,z]);
    if(yz.reduce((sum,p,i)=>{const q=yz[(i+1)%yz.length];return sum+p[0]*q[1]-q[0]*p[1];},0)<0)yz.reverse();
    return move(keep(keep(keep(new C([yz])).extrude(2.6)).rotate([90,0,90])),cx-1.3,0,0);
   };
-  pod=cut(union([pod,hook(-5,-1.20,-1),hook(0,-8.60,1)]),solderBays);
+  pod=cut(union([pod,hook(-5,-.95,-1),hook(0,-8.85,1)]),solderBays);
   const mountingHoles=(z,h)=>union([cylinder(switchSpec.centerHole/2,h,0,0,z),
    ...switchSpec.auxiliaryHoles.map(([x,y])=>cylinder(switchSpec.guideHole/2,h,x,y,z)),
    ...s.pins.map(([x,y])=>cylinder(switchSpec.contactHole/2,h,x,y,z))]);
   pod=cut(pod,mountingHoles(6,7));
-  const coupon=cut(union([box(22,24,1.5,0,-2,10),pod]),mountingHoles(6,7));
+  pod=move(pod,0,0,-recess);socket=move(socket,0,0,-recess);
+  // 15 mm opening clears the 13.95 mm housing; 1.5 mm thick recessed floor.
+  // An 18 mm outer cup ties that floor back into the surrounding upper plate.
+  const cup=cut(box(18,18,1.5+recess,0,0,10-recess),box(15,15,recess+.2,0,0,11.5-recess));
+  const coupon=cut(union([cut(box(22,24,1.5,0,-2,10),box(15,15,4,0,0,9)),cup,pod]),mountingHoles(6-recess,7+recess));
   const screws=screwCenters.map(([x,y])=>cylinder(1.7,24,x,y,-2));
   const nuts=screwCenters.map(([x,y])=>cylinder(assemblySpec.nutAcrossFlats/Math.sqrt(3),2.7,x,y,-1.1,6));
   // 2 mm floor; retain the original mating height only at rim and fasteners.
@@ -109,8 +114,8 @@ export function buildAssembly(locations){
   let wall=cut(union([ring(110,104,8,7,3),...pillars]),union([...screws,
    // Relief pockets in the pillars accept both continuous locating lips.
    ring(103.9,99.7,5.95,1.9,2.9),ring(103.9,99.7,5.95,1.9,8.2),...screwCenters.map(([x,y])=>cylinder(4.8,1.3,x,y,8.8))]));
-  const switchCuts=locations.map(k=>move(mountingHoles(6,7),k.x,k.y));
-  let top=union([...locations.map(k=>move(pod,k.x,k.y)),slab(110,110,8,1.5,10),ring(103.4,100.2,5.7,1.7,8.4),...screwCenters.map(([x,y])=>cylinder(4.5,2.5,x,y,9))]);
+  const switchCuts=locations.map(k=>move(mountingHoles(6-recess,7+recess),k.x,k.y));
+  let top=union([...locations.map(k=>move(pod,k.x,k.y)),cut(slab(110,110,8,1.5,10),union(locations.map(k=>box(15,15,4,k.x,k.y,9)))),...locations.map(k=>move(cup,k.x,k.y)),ring(103.4,100.2,5.7,1.7,8.4),...screwCenters.map(([x,y])=>cylinder(4.5,2.5,x,y,9))]);
   top=cut(top,union([...screws,...switchCuts,cylinder(9.8,5,-30,30,8),cylinder(9,5,30,30,8)]));
   wall=cut(wall,union([usbOpening,boardRecess]));
   top=cut(top,union([usbOpening,boardRecess]));
@@ -124,10 +129,10 @@ export function buildAssembly(locations){
   // Mechanical regression evidence is computed from solid intersections, not screenshots.
   const overlap=(a,b)=>{const i=keep(a.intersect(b));return i.volume();};
   const allShell=union([bottom,wall,top]);
-  const plasticPins=cylinder(switchSpec.postDiameter/2,3.3,0,0,8.2);
-  const contacts=union(switchSpec.pins.map(([x,y])=>box(.8,.25,3,x,y,8.5)));
+  const plasticPins=cylinder(switchSpec.postDiameter/2,3.3,0,0,8.2-recess);
+  const contacts=union(switchSpec.pins.map(([x,y])=>box(.8,.25,3,x,y,8.5-recess)));
   const completePins=union([plasticPins,contacts]);
-  const switchBody=box(13.95,13.95,5.3,0,0,11.5);
+  const switchBody=box(13.95,13.95,5.3,0,0,switchSpec.carrierTop);
   const pinsInAssembly=union(locations.map(k=>move(completePins,k.x,k.y)));
   // Sweep the inserted pins upward through the final millimetre of approach.
   const insertionSweep=union(Array.from({length:6},(_,i)=>move(pinsInAssembly,0,0,i*.2)));
@@ -135,7 +140,7 @@ export function buildAssembly(locations){
    topComponents:top.decompose().map(keep).length,
    supportCount:locations.length,
    supportSocketOverlap:overlap(supports,union(socketSolids)),
-   supportContactOverlap:overlap(supportLocal,union([pinSlots,contactRecesses,solderBays])),
+   supportContactOverlap:overlap(supportLocal,move(union([pinSlots,contactRecesses,solderBays]),0,0,-recess)),
    supportCatchVolumes:locations.map((k,i)=>overlap(supports,move(socketSolids[i],0,0,-.2))),
    postSocketOverlap:overlap(socket,plasticPins),plasticSocketOverlap:overlap(socket,plasticPins),contactSocketOverlap:overlap(socket,contacts),
    pinShellOverlap:overlap(allShell,pinsInAssembly),pinSocketOverlap:overlap(union(socketSolids),pinsInAssembly),
@@ -146,8 +151,8 @@ export function buildAssembly(locations){
    boardSeatedOverlap:overlap(union([bottom,wall,top]),box(17.8,21,1,bx,by,bz)),
    shellOverlap:overlap(bottom,wall)+overlap(bottom,top)+overlap(wall,top),
    socketHolderOverlap:overlap(top,union(socketSolids)),
-   socketContactReliefOverlap:overlap(top,union(locations.map(k=>move(mountingHoles(6,7),k.x,k.y)))),
-   socketSolderBayOverlap:overlap(top,union(locations.flatMap(k=>socketTerminals.map(([x,y])=>box(1.6,1.68,.4,k.x+x,k.y+y,8.65))))),
+   socketContactReliefOverlap:overlap(top,union(locations.map(k=>move(mountingHoles(6-recess,7+recess),k.x,k.y)))),
+   socketSolderBayOverlap:overlap(top,union(locations.flatMap(k=>socketTerminals.map(([x,y])=>box(1.6,1.68,.4,k.x+x,k.y+y,8.65-recess))))),
    upwardRetentionVolume:overlap(top,move(union(socketSolids),0,0,.6)),
    downwardSupportVolume:overlap(top,move(union(socketSolids),0,0,-.3)),
    boltShellOverlap:overlap(union([bottom,wall,top]),bolts),nutShellOverlap:overlap(bottom,metalNuts)};
@@ -158,7 +163,7 @@ export function buildAssembly(locations){
 // Printable trial fit, deliberately separate from nominal switch dimensions.
 export const keycapSpec={height:7.5,cavityDepth:3.8,wallInset:1.35,
  mountSpan:4.15,mountBar:1.45,mountDepth:2.8,hubRadius:2.6,leadInDepth:.35,
- assembledZ:18,stemTop:20.5,stemSpan:4.0,stemBar:1.3,travel:2.8};
+ assembledZ:18-switchSpec.recessDepth,stemTop:20.5-switchSpec.recessDepth,stemSpan:4.0,stemBar:1.3,travel:2.8};
 export function hollowKeycap(exterior,width,depth,mountXs){
  const owned=[];const keep=o=>(owned.push(o),o);const {Manifold:M,CrossSection:C}=kernel;const s=keycapSpec;
  const move=(g,x,y,z)=>keep(g.translate([x,y,z]));
@@ -185,7 +190,7 @@ export function hollowKeycap(exterior,width,depth,mountXs){
   const guards=union(mountXs.map(x=>move(cut(keep(M.cylinder(3.1,3.25,3.25,64)),keep(M.cylinder(3.3,2.75,2.75,64))),x,0,-.6)));
   const guardOverlap=keep(solid.intersect(guards)).volume();
   // Lower cap to maximum specified travel; fixed housing envelope is PCB-referenced.
-  const bodies=union(mountXs.map(x=>move(cut(box(13.95,13.95,5.3),keep(M.cylinder(5.4,3.3,3.3,64))),x,0,11.5-s.assembledZ+switchSpec.maxTravel)));
+  const bodies=union(mountXs.map(x=>move(cut(box(13.95,13.95,5.3),keep(M.cylinder(5.4,3.3,3.3,64))),x,0,switchSpec.carrierTop-s.assembledZ+switchSpec.maxTravel)));
   const bottomOutOverlap=keep(solid.intersect(bodies)).volume();
   const components=solid.decompose().map(keep).length;
   return {geometry,validation:{components,guardOverlap,bottomOutOverlap,stemOverlap:overlap.volume(),engagement:s.stemTop-s.assembledZ,

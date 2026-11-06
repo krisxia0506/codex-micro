@@ -89,11 +89,11 @@ export function decorate(mesh, part) {
       // Open pin slots are part of the socket solid. Two contact leaves sit
       // below the mouth rather than covering it with opaque decorative discs.
       for(const [dx,dy] of switchSpec.socketPins){
-        for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,9.4,.8);
+        for(const side of [-1,1])box(.95,.08,1,'#c1a15c',x+dx,y+dy+side*.25,9.4-switchSpec.recessDepth,.8);
       }
       for(const [dx,dy] of socketTerminals){
-        box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,8.85,.85);
-        for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,9.08,.8);
+        box(1.6,1.68,.4,'#b7b9b9',x+dx,y+dy,8.85-switchSpec.recessDepth,.85);
+        for(const side of [-1,1])box(1.6,.12,.08,'#737778',x+dx,y+dy+side*.42,9.08-switchSpec.recessDepth,.8);
       }
     }
   }

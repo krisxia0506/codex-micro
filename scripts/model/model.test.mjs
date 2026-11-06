@@ -89,7 +89,7 @@ test('switch plate exports face-down with broad bed contact',()=>{
  for(let i=0;i<a.count;i+=3){const v=[0,1,2].map(j=>new Vector3().fromBufferAttribute(a,i+j));
   if(v.every(p=>Math.abs(p.z)<1e-5))area+=v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).length()/2;
  }
- assert.ok(area>7000);g.dispose();
+ assert.ok(area>4500);g.dispose();
 });
 
 test('updated flying wires clear the integral socket mounts and enclosure',async()=>{
@@ -230,7 +230,7 @@ test('socket pin slots are open through both collars and bodies',()=>{
    const hits=new Raycaster(new Vector3(x+dx,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh);
    assert.equal(hits.length,0,'no plastic may fill the pin insertion path');
    const rim=new Raycaster(new Vector3(x+dx+.9,y+dy,12),new Vector3(0,0,-1)).intersectObject(mesh);
-   assert.ok(Math.abs(rim[0]?.point.z-11.2)<1e-4,'collar remains around the slot');
+   assert.ok(Math.abs(rim[0]?.point.z-9.2)<1e-4,'collar remains around the slot');
   }
  }
  mesh.material.dispose();
@@ -270,7 +270,7 @@ test('exploded switch group separates above carrier and below caps',()=>{
   for(const p of group){
    assert.equal(shift(p),shift(group[0]),'all switch-group members move together');
    if(amount>0){assert.ok(shift(p)>shift(top));assert.ok(caps.every(c=>shift(c)>shift(p)));}
-   if(p.id.startsWith('switch-'))assert.ok(p.position[2]+shift(p)>=top.position[2]+1.5+shift(top),'switch body never falls below carrier');
+   if(p.id.startsWith('switch-'))assert.ok(p.position[2]+shift(p)>=top.position[2]-.5+shift(top),'switch body never falls below recessed carrier');
   }
  }
 });
@@ -279,8 +279,8 @@ test('1350 socket lower body is inset from its wider insertion-side rim',()=>{
  const mesh=new Mesh(parts.find(p=>p.id==='sockets').geometry,new MeshBasicMaterial({side:DoubleSide}));
  const [x,y]=parts.find(p=>p.id==='sockets').socketPositions[0];
  const edge=z=>new Raycaster(new Vector3(x-10,y-2.5,z),new Vector3(1,0,0)).intersectObject(mesh)[0]?.point.x-x;
- assert.ok(Math.abs(edge(8.5)+7.375)<1e-4,'9.55 mm lower body left edge');
- assert.ok(Math.abs(edge(9.9)+7.575)<1e-4,'9.95 mm upper rim left edge');
+ assert.ok(Math.abs(edge(6.5)+7.375)<1e-4,'9.55 mm lower body left edge');
+ assert.ok(Math.abs(edge(7.9)+7.575)<1e-4,'9.95 mm upper rim left edge');
  mesh.material.dispose();
 });
 
@@ -295,7 +295,23 @@ test('all 13 bottom pedestals catch sockets without touching contacts or preload
  const mesh=new Mesh(bottom.geometry,new MeshBasicMaterial({side:DoubleSide}));
  for(const [x,y] of parts.find(p=>p.id==='sockets').socketPositions){
   const hit=new Raycaster(new Vector3(x-2.5,y-4.9,9),new Vector3(0,0,-1)).intersectObject(mesh)[0];
-  assert.ok(Math.abs(hit.point.z-8)<1e-5,'assembled support top Z=8, height above floor=7');
+  assert.ok(Math.abs(hit.point.z-6)<1e-5,'assembled support top Z=6, height above floor=5');
  }
+ mesh.material.dispose();
+});
+
+test('all recessed seats lower switches and caps 2 mm while preserving the floor thickness',()=>{
+ const p=parts.find(p=>p.id==='top'),mesh=new Mesh(p.geometry,new MeshBasicMaterial({side:DoubleSide}));
+ mesh.position.fromArray(p.position);mesh.updateMatrixWorld();
+ for(const [x,y] of parts.find(p=>p.id==='sockets').socketPositions){
+  const hits=new Raycaster(new Vector3(x+6,y,14),new Vector3(0,0,-1)).intersectObject(mesh);
+  const levels=[...new Set(hits.map(h=>Number(h.point.z.toFixed(4))))];
+  assert.equal(levels[0],9.5,'recess floor top');assert.equal(levels[1],8,'1.5 mm floor');
+  const rim=new Raycaster(new Vector3(x+8,y,14),new Vector3(0,0,-1)).intersectObject(mesh)[0];
+  assert.ok(Math.abs(rim.point.z-11.5)<1e-5,'outer rim remains at enclosure top');
+ }
+ assert.ok(parts.filter(p=>p.id.startsWith('switch-')).every(p=>p.position[2]===9.5));
+ assert.ok(parts.filter(p=>p.id.startsWith('key-')).every(p=>p.position[2]===16));
+ assert.equal(assemblySpec.socket.clearance,.5);
  mesh.material.dispose();
 });
