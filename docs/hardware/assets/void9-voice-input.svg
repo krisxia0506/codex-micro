@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1000" viewBox="0 0 1360 1000" style="max-width:100%;height:auto" role="img" aria-labelledby="title desc">
+  <title id="title">原版功能对应九键布局与协议路线</title>
+  <desc id="desc">九键为 Agent 1、Agent 2、Agent 3、Fast、Approve、Decline、Fork、Mic、Send。Pro Micro 参考 fpad 走 USB 厂商 HID，ESP32 参考 Core2 走 BLE 厂商 HID，两者都控制官方桌面应用。电脑负责麦克风听写，用户检查后按 Send。普通快捷键仅作为受限降级。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#5a7190"/></marker>
+    <style>text{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;fill:#172d46}.head{font-size:25px;font-weight:650}.body{font-size:20px}.note{font-size:17px;fill:#526a83}.key{font-size:19px;text-anchor:middle;dominant-baseline:middle}</style>
+  </defs>
+  <rect width="1360" height="1000" rx="24" fill="#f3f6fb"/>
+  <text x="48" y="57" font-size="32" font-weight="700">三个 Agent 键 + 六个原版命令键</text>
+  <text x="48" y="99" class="body">优先验证协议兼容，快捷键作为降级 · 本图为方案，尚未移植或实测</text>
+  <rect x="48" y="140" width="420" height="500" rx="20" fill="#fff" stroke="#c6d3e2" stroke-width="2"/>
+  <text x="78" y="184" class="head">九键目标布局 / 3×3</text>
+  <text x="78" y="213" class="note">保留六种命令动作，缩减 Agent 数量</text>
+  <g fill="#edf2f8" stroke="#c8d5e4" stroke-width="2">
+    <rect x="82" y="242" width="100" height="80" rx="12"/><rect x="202" y="242" width="100" height="80" rx="12"/><rect x="322" y="242" width="100" height="80" rx="12"/>
+    <rect x="82" y="342" width="100" height="80" rx="12"/><rect x="202" y="342" width="100" height="80" rx="12"/><rect x="322" y="342" width="100" height="80" rx="12"/>
+    <rect x="82" y="442" width="100" height="80" rx="12"/><rect x="202" y="442" width="100" height="80" rx="12" fill="#d7e9ff" stroke="#78a9e1"/><rect x="322" y="442" width="100" height="80" rx="12"/>
+  </g>
+  <g class="key"><text x="132" y="282">Agent 1</text><text x="252" y="282">Agent 2</text><text x="372" y="282">Agent 3</text><text x="132" y="382">Fast</text><text x="252" y="382">Approve</text><text x="372" y="382">Decline</text><text x="132" y="482">Fork</text><text x="252" y="482" font-weight="700">Mic</text><text x="372" y="482">Send</text></g>
+  <text x="78" y="564" class="note">发送逻辑键事件，不是普通键码改名。</text>
+  <text x="78" y="598" class="note">任务灯需另有硬件；此处不承诺灯效。</text>
+  <rect x="564" y="140" width="748" height="500" rx="20" fill="#fff" stroke="#c6d3e2" stroke-width="2"/>
+  <path d="M482 264H585" stroke="#5a7190" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="483" y="239" class="note">USB/BLE</text>
+  <text x="598" y="184" class="head">官方桌面应用：处理原生操作与听写</text>
+  <rect x="600" y="222" width="676" height="84" rx="12" fill="#e7f0ff"/>
+  <text x="624" y="255" class="body" font-weight="650">① 识别兼容设备 → 执行已配置的原生命令</text>
+  <text x="624" y="284" class="note">HID / RPC 双向通信：按键事件、查询应答、任务状态。</text>
+  <path d="M938 315V338" stroke="#5a7190" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="600" y="350" width="676" height="84" rx="12" fill="#e8f5ef"/>
+  <text x="624" y="383" class="body" font-weight="650">② Mic：按住听写 → 使用电脑麦克风</text>
+  <text x="624" y="412" class="note">优先复用官方应用听写；不通过键盘控制通道传音频。</text>
+  <path d="M938 444V466" stroke="#5a7190" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="600" y="478" width="676" height="100" rx="12" fill="#fff3dc"/>
+  <text x="624" y="514" class="body" font-weight="650">③ 文字进入输入框 → 用户检查 / 编辑 → Send</text>
+  <text x="624" y="546" class="note">松开 Mic 不提交文字；Decline 对应拒绝请求，不是通用取消。</text>
+  <text x="598" y="613" class="note">社区协议并非官方稳定 API；需验证当前桌面应用与实际硬件。</text>
+  <rect x="48" y="684" width="404" height="214" rx="18" fill="#fff" stroke="#94b3d8" stroke-width="2"/>
+  <text x="72" y="725" class="head">Pro Micro / USB</text>
+  <text x="72" y="769" class="body">参考 fpad 的 ATmega32U4 / LUFA。</text>
+  <text x="72" y="809" class="note">4×4 扫描改为 void9 的 3×3，重配引脚。</text>
+  <text x="72" y="846" class="note">未移植、未编译，不能直接刷上游固件。</text>
+  <rect x="478" y="684" width="404" height="214" rx="18" fill="#fff" stroke="#94b3d8" stroke-width="2"/>
+  <text x="502" y="725" class="head">ESP32 / BLE</text>
+  <text x="502" y="769" class="body">参考 Core2 的 BLE 厂商 HID。</text>
+  <text x="502" y="809" class="note">选定开发板，触屏输入改为物理九键。</text>
+  <text x="502" y="846" class="note">上游 Core2 验证不代表全系列兼容。</text>
+  <rect x="908" y="684" width="404" height="214" rx="18" fill="#fff8e9" stroke="#c7a365" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="932" y="725" class="head">快捷键 / 受限降级</text>
+  <text x="932" y="769" class="body">逐项核对系统、焦点与应用设置。</text>
+  <text x="932" y="809" class="note">Fast / Fork / Mic 不承诺等价。</text>
+  <text x="932" y="846" class="note">无任务灯回传；不支持项须明确标示。</text>
+  <text x="48" y="947" class="note">三条路线分别验证；不把原生协议、普通快捷键与自研听写混为同一能力。</text>
+  <text x="48" y="979" class="note">原创方案图 · 2026-10-23 · 来源与验收边界见 void9-pro-micro.md</text>
+</svg>
