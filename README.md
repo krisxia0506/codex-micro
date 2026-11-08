@@ -68,7 +68,7 @@ git clone https://github.com/krisxia0506/codex-micro.git
 cd codex-micro
 ```
 
-从产品调研和路线图开始阅读。网页构建见模型工作台说明；硬件烧录与安装步骤将在实现加入后提供。
+从产品调研和路线图开始阅读。网页构建见模型工作台说明；按键原型的串口诊断程序与烧录步骤见[焊接教程](docs/hardware/key-matrix.md)，完整键盘与音频固件尚未实现。
 
 ## 路线图
 

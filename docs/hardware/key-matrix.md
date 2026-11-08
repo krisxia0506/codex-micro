@@ -125,10 +125,12 @@
 ### Arduino IDE 烧录
 
 1. 安装 Arduino IDE，在附加开发板管理器地址加入 Seeed 官方索引：`https://files.seeedstudio.com/arduino/package_seeeduino_boards_index.json`。
-2. 安装 **Seeed nRF52 Boards**（非 mbed 版），选择 **Seeed XIAO nRF52840 Sense** 目标。本程序只用 Sense 与 Sense Plus 共用的 D0–D10 边缘 GPIO；不要据此认为 Plus 新增焊盘已被该目标支持。具体本地编译版本见下方验证记录。
+2. 安装 **Seeed nRF52 Boards 1.1.13**（非 mbed 版），选择 **Seeed XIAO nRF52840 Sense Plus** 目标。不要误选不带 Plus 的板型；若列表没有 Plus，先更新开发板包。
 3. 打开与文件夹同名的 `.ino`，点击验证。连接 USB 数据线，选择对应串口后上传；这里只操作你手中的目标板。
 4. 如果原固件不能正常枚举，按 [Seeed 官方恢复说明](https://wiki.seeedstudio.com/XIAO_BLE/) 快速双击板上 Reset 进入 bootloader，再重新选择出现的端口上传。不要擦除或替换 bootloader。
 5. 打开串口监视器，选择 115200；打开后按一下 Reset，可以看到启动提示。无按键时约每 5 秒打印 `alive`。串口打开前的按键事件不回放，打开后再测试。
+
+如果 Apple Silicon Mac 编译提示 `bad CPU type in executable`，这是包内 Intel 工具无法运行，不是接线问题。需要兼容的 Intel 执行环境或原生工具链；本次使用原生工具链的验证配置见第 8 节，不宣称默认 IDE 工具链在所有 Mac 上开箱即用。
 
 正常示例：
 
@@ -170,3 +172,28 @@ alive
 ## 8. 交付验证范围
 
 电路图、接线表和测试程序按同一矩阵设计。仓库链接/素材校验及编译结果在本次 PR 中记录。没有连接实物执行烧录、按键、温升或装配测试；固件运行与机械适配仍需按上述流程现场验收。该版本为可审阅的原型设计，不是已验收成品。
+
+软件模拟测试可在仓库根目录执行（需要支持 C++17 的编译器）：
+
+```bash
+c++ -std=c++17 -I scripts/firmware-test scripts/firmware-test/test.cpp -o /tmp/codex-micro-matrix-test
+/tmp/codex-micro-matrix-test
+```
+
+测试直接包含实际 `.ino`，覆盖触点抖动、长按不重复、释放、13 键并发、空交点忽略、USB 串口关闭时继续扫描，以及每次仅一个行驱动/扫描后恢复高阻。它用模拟 GPIO 提供理想逻辑电平，不能验证真实二极管压降、电气鬼键或硬件消抖效果。
+
+2026-11-08 本地验证：
+
+- 文档链接、SHA-256、补丁空白检查通过；SVG 已渲染检查，并核对 13 组开关、二极管和键位编号。
+- 上述 C++17 模拟测试通过。
+- `Seeeduino:nrf52:xiaonRF52840SensePlus` / Seeed nRF52 Boards **1.1.13** 编译、链接与打包通过；程序 47,304 字节，静态 RAM 7,544 字节。USB 库为包内 Adafruit TinyUSB 1.7.0。
+- 本机为 Apple Silicon；包内 GCC 9 与 ctags 是 Intel 可执行文件，默认构建失败。临时目录中改用 **Arm GNU 13.2.Rel1 darwin-arm64**、本机编译的 Arduino ctags 5.8-arduino11（仅重命名其与 macOS 头文件冲突的 `__unused__` 宏），以及 Python 环境中的 adafruit-nrfutil 0.5.3.post16。没有修改开发板包的硬件定义或本项目固件逻辑来规避错误。
+- 链接器报告 newlib 的 `_close`、`_read` 等系统调用桩未实现警告；本程序不使用文件系统，串口走 TinyUSB。编译成功不是硬件运行证据。
+
+标准工具链可用时的编译命令：
+
+```bash
+arduino-cli compile --fqbn Seeeduino:nrf52:xiaonRF52840SensePlus firmware/key_matrix_test
+```
+
+原生工具链复现时，在上述命令增加 `--build-property compiler.path=<Arm工具链>/bin/`、`--build-property tools.ctags.path=<ctags目录>`、`--build-property runtime.tools.ctags.path=<ctags目录>`、`--build-property tools.nrfutil.cmd=<Python环境>/bin/adafruit-nrfutil` 和 `--build-property tools.nrfutil.cmd.macosx=<同一路径>`；将该 Python 环境的 `bin` 加到 PATH，以提供打包脚本需要的 `python`。Arm 工具链来源为 [Arm 官方工具链发布入口](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)，ctags 来源为 [Arduino ctags 5.8-arduino11](https://github.com/arduino/ctags/tree/5.8-arduino11)。这些是开发验证环境说明，不需要焊接者先改动系统工具。
