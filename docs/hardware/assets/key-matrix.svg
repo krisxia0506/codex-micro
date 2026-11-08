@@ -1,0 +1,274 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1420" viewBox="0 0 1400 1420" role="img" aria-labelledby="title desc">
+<title id="title">XIAO Sense Plus 13-key wiring</title><desc id="desc">Four by four sparse COL2ROW matrix. Each switch has one diode with cathode stripe toward row. Top-view layout and eight GPIO nets.</desc>
+<rect width="1400" height="1420" fill="#f8fafc"/>
+<style>text{font-family:Arial,"PingFang SC",sans-serif;fill:#172b42} .wire{fill:none;stroke:#24374b;stroke-width:2.5} .col{fill:#006f9c} .row{fill:#994600}</style>
+<text x="40" y="48" font-size="30" >Codex Micro · v0.22 按键原型电路</text>
+<text x="40" y="82" font-size="20" >USB 供电 · 13 个开关 / 13 颗 1N4148 · 8 根 GPIO 线 · 原型待实物验证</text>
+<rect x="30" y="105" width="780" height="375" rx="8" fill="#fff" stroke="#bdcad8"/>
+<rect x="830" y="105" width="540" height="375" rx="8" fill="#fff" stroke="#bdcad8"/>
+<text x="50" y="140" font-size="22" >① 键位顶视图（USB 在上；翻面焊接时左右镜像）</text>
+<text x="135" y="172" font-size="16" class="col">C0 / D0</text>
+<text x="302" y="172" font-size="16" class="col">C1 / D1</text>
+<text x="469" y="172" font-size="16" class="col">C2 / D2</text>
+<text x="636" y="172" font-size="16" class="col">C3 / D3</text>
+<text x="45" y="218" font-size="17" class="row">R0</text>
+<rect x="90" y="185" width="158" height="55" rx="8" fill="#f1f3f5" stroke="#bdcad8"/>
+<text x="100" y="218" font-size="16" >不接矩阵</text>
+<rect x="264" y="185" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="274" y="207" font-size="17" >SW1</text>
+<text x="274" y="229" font-size="16" >Agent 1</text>
+<rect x="438" y="185" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="448" y="207" font-size="17" >SW2</text>
+<text x="448" y="229" font-size="16" >Agent 2</text>
+<rect x="612" y="185" width="158" height="55" rx="8" fill="#f1f3f5" stroke="#bdcad8"/>
+<text x="622" y="218" font-size="16" >不接矩阵</text>
+<text x="45" y="283" font-size="17" class="row">R1</text>
+<rect x="90" y="250" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="100" y="272" font-size="17" >SW3</text>
+<text x="100" y="294" font-size="16" >Agent 3</text>
+<rect x="264" y="250" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="274" y="272" font-size="17" >SW4</text>
+<text x="274" y="294" font-size="16" >Agent 4</text>
+<rect x="438" y="250" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="448" y="272" font-size="17" >SW5</text>
+<text x="448" y="294" font-size="16" >Agent 5</text>
+<rect x="612" y="250" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="622" y="272" font-size="17" >SW6</text>
+<text x="622" y="294" font-size="16" >Agent 6</text>
+<text x="45" y="348" font-size="17" class="row">R2</text>
+<rect x="90" y="315" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="100" y="337" font-size="17" >SW7</text>
+<text x="100" y="359" font-size="16" >Fast</text>
+<rect x="264" y="315" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="274" y="337" font-size="17" >SW8</text>
+<text x="274" y="359" font-size="16" >Approve</text>
+<rect x="438" y="315" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="448" y="337" font-size="17" >SW9</text>
+<text x="448" y="359" font-size="16" >Decline</text>
+<rect x="612" y="315" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="622" y="337" font-size="17" >SW10</text>
+<text x="622" y="359" font-size="16" >Fork</text>
+<text x="45" y="413" font-size="17" class="row">R3</text>
+<rect x="90" y="380" width="158" height="55" rx="8" fill="#f1f3f5" stroke="#bdcad8"/>
+<text x="100" y="413" font-size="16" >不接矩阵</text>
+<rect x="264" y="380" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="274" y="402" font-size="17" >SW11</text>
+<text x="274" y="424" font-size="16" >Mic 左轴</text>
+<rect x="438" y="380" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="448" y="402" font-size="17" >SW12</text>
+<text x="448" y="424" font-size="16" >Mic 右轴</text>
+<rect x="612" y="380" width="158" height="55" rx="8" fill="#eaf5fa" stroke="#bdcad8"/>
+<text x="622" y="402" font-size="17" >SW13</text>
+<text x="622" y="424" font-size="16" >Send</text>
+<text x="850" y="140" font-size="21" >② XIAO 边缘焊盘 · 元件面朝上</text>
+<rect x="1030" y="160" width="150" height="265" rx="8" fill="#dceee7" stroke="#bdcad8"/>
+<rect x="1070" y="148" width="70" height="28" rx="8" fill="#cad4db" stroke="#bdcad8"/>
+<text x="1083" y="168" font-size="16" >USB</text>
+<text x="875" y="196" font-size="17" >D0  C0</text>
+<path d="M1003 190 L1037 190" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="196" font-size="17" >5V  不接</text>
+<path d="M1173 190 L1193 190" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="228" font-size="17" >D1  C1</text>
+<path d="M1003 222 L1037 222" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="228" font-size="17" >GND  不接</text>
+<path d="M1173 222 L1193 222" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="260" font-size="17" >D2  C2</text>
+<path d="M1003 254 L1037 254" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="260" font-size="17" >3V3  不接</text>
+<path d="M1173 254 L1193 254" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="292" font-size="17" >D3  C3</text>
+<path d="M1003 286 L1037 286" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="292" font-size="17" >D10  预留</text>
+<path d="M1173 286 L1193 286" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="324" font-size="17" >D4  预留</text>
+<path d="M1003 318 L1037 318" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="324" font-size="17" >D9  R3</text>
+<path d="M1173 318 L1193 318" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="356" font-size="17" >D5  预留</text>
+<path d="M1003 350 L1037 350" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="356" font-size="17" >D8  R2</text>
+<path d="M1173 350 L1193 350" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="875" y="388" font-size="17" >D6  R0</text>
+<path d="M1003 382 L1037 382" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="1200" y="388" font-size="17" >D7  R1</text>
+<path d="M1173 382 L1193 382" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="850" y="457" font-size="18" >电源脚不接矩阵；只使用板载 USB-C 供电。</text>
+<rect x="30" y="500" width="1340" height="740" rx="8" fill="#fff" stroke="#bdcad8"/>
+<text x="50" y="537" font-size="23" >③ 完整电气支路（同名 C / R 网络相连；空交点不接线）</text>
+<text x="50" y="569" font-size="19" >蓝色为列输入上拉；棕色为行扫描；每颗二极管的黑环 K 都朝行线。</text>
+<text x="60" y="616" font-size="18" class="col">C1 / D1</text>
+<path d="M165 610 L300 610" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="610" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="610" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 608 L373 595" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="589" font-size="15" >SW1</text>
+<path d="M384 610 L585 610" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 598 L585 622 L612 610 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 596 L614 624" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 610 L830 610" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="590" font-size="14" >VD1</text>
+<text x="640" y="603" font-size="14" class="row">K 黑环</text>
+<text x="850" y="616" font-size="18" class="row">R0 / D6</text>
+<text x="1050" y="616" font-size="18" >Agent 1</text>
+<text x="60" y="662" font-size="18" class="col">C2 / D2</text>
+<path d="M165 656 L300 656" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="656" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="656" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 654 L373 641" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="635" font-size="15" >SW2</text>
+<path d="M384 656 L585 656" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 644 L585 668 L612 656 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 642 L614 670" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 656 L830 656" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="636" font-size="14" >VD2</text>
+<text x="640" y="649" font-size="14" class="row">K 黑环</text>
+<text x="850" y="662" font-size="18" class="row">R0 / D6</text>
+<text x="1050" y="662" font-size="18" >Agent 2</text>
+<text x="60" y="708" font-size="18" class="col">C0 / D0</text>
+<path d="M165 702 L300 702" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="702" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="702" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 700 L373 687" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="681" font-size="15" >SW3</text>
+<path d="M384 702 L585 702" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 690 L585 714 L612 702 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 688 L614 716" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 702 L830 702" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="682" font-size="14" >VD3</text>
+<text x="640" y="695" font-size="14" class="row">K 黑环</text>
+<text x="850" y="708" font-size="18" class="row">R1 / D7</text>
+<text x="1050" y="708" font-size="18" >Agent 3</text>
+<text x="60" y="754" font-size="18" class="col">C1 / D1</text>
+<path d="M165 748 L300 748" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="748" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="748" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 746 L373 733" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="727" font-size="15" >SW4</text>
+<path d="M384 748 L585 748" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 736 L585 760 L612 748 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 734 L614 762" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 748 L830 748" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="728" font-size="14" >VD4</text>
+<text x="640" y="741" font-size="14" class="row">K 黑环</text>
+<text x="850" y="754" font-size="18" class="row">R1 / D7</text>
+<text x="1050" y="754" font-size="18" >Agent 4</text>
+<text x="60" y="800" font-size="18" class="col">C2 / D2</text>
+<path d="M165 794 L300 794" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="794" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="794" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 792 L373 779" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="773" font-size="15" >SW5</text>
+<path d="M384 794 L585 794" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 782 L585 806 L612 794 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 780 L614 808" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 794 L830 794" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="774" font-size="14" >VD5</text>
+<text x="640" y="787" font-size="14" class="row">K 黑环</text>
+<text x="850" y="800" font-size="18" class="row">R1 / D7</text>
+<text x="1050" y="800" font-size="18" >Agent 5</text>
+<text x="60" y="846" font-size="18" class="col">C3 / D3</text>
+<path d="M165 840 L300 840" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="840" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="840" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 838 L373 825" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="819" font-size="15" >SW6</text>
+<path d="M384 840 L585 840" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 828 L585 852 L612 840 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 826 L614 854" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 840 L830 840" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="820" font-size="14" >VD6</text>
+<text x="640" y="833" font-size="14" class="row">K 黑环</text>
+<text x="850" y="846" font-size="18" class="row">R1 / D7</text>
+<text x="1050" y="846" font-size="18" >Agent 6</text>
+<text x="60" y="892" font-size="18" class="col">C0 / D0</text>
+<path d="M165 886 L300 886" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="886" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="886" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 884 L373 871" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="865" font-size="15" >SW7</text>
+<path d="M384 886 L585 886" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 874 L585 898 L612 886 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 872 L614 900" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 886 L830 886" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="866" font-size="14" >VD7</text>
+<text x="640" y="879" font-size="14" class="row">K 黑环</text>
+<text x="850" y="892" font-size="18" class="row">R2 / D8</text>
+<text x="1050" y="892" font-size="18" >Fast</text>
+<text x="60" y="938" font-size="18" class="col">C1 / D1</text>
+<path d="M165 932 L300 932" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="932" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="932" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 930 L373 917" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="911" font-size="15" >SW8</text>
+<path d="M384 932 L585 932" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 920 L585 944 L612 932 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 918 L614 946" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 932 L830 932" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="912" font-size="14" >VD8</text>
+<text x="640" y="925" font-size="14" class="row">K 黑环</text>
+<text x="850" y="938" font-size="18" class="row">R2 / D8</text>
+<text x="1050" y="938" font-size="18" >Approve</text>
+<text x="60" y="984" font-size="18" class="col">C2 / D2</text>
+<path d="M165 978 L300 978" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="978" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="978" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 976 L373 963" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="957" font-size="15" >SW9</text>
+<path d="M384 978 L585 978" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 966 L585 990 L612 978 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 964 L614 992" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 978 L830 978" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="958" font-size="14" >VD9</text>
+<text x="640" y="971" font-size="14" class="row">K 黑环</text>
+<text x="850" y="984" font-size="18" class="row">R2 / D8</text>
+<text x="1050" y="984" font-size="18" >Decline</text>
+<text x="60" y="1030" font-size="18" class="col">C3 / D3</text>
+<path d="M165 1024 L300 1024" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="1024" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="1024" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 1022 L373 1009" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="1003" font-size="15" >SW10</text>
+<path d="M384 1024 L585 1024" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 1012 L585 1036 L612 1024 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 1010 L614 1038" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 1024 L830 1024" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="1004" font-size="14" >VD10</text>
+<text x="640" y="1017" font-size="14" class="row">K 黑环</text>
+<text x="850" y="1030" font-size="18" class="row">R2 / D8</text>
+<text x="1050" y="1030" font-size="18" >Fork</text>
+<text x="60" y="1076" font-size="18" class="col">C1 / D1</text>
+<path d="M165 1070 L300 1070" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="1070" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="1070" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 1068 L373 1055" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="1049" font-size="15" >SW11</text>
+<path d="M384 1070 L585 1070" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 1058 L585 1082 L612 1070 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 1056 L614 1084" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 1070 L830 1070" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="1050" font-size="14" >VD11</text>
+<text x="640" y="1063" font-size="14" class="row">K 黑环</text>
+<text x="850" y="1076" font-size="18" class="row">R3 / D9</text>
+<text x="1050" y="1076" font-size="18" >Mic 左轴</text>
+<text x="60" y="1122" font-size="18" class="col">C2 / D2</text>
+<path d="M165 1116 L300 1116" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="1116" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="1116" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 1114 L373 1101" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="1095" font-size="15" >SW12</text>
+<path d="M384 1116 L585 1116" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 1104 L585 1128 L612 1116 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 1102 L614 1130" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 1116 L830 1116" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="1096" font-size="14" >VD12</text>
+<text x="640" y="1109" font-size="14" class="row">K 黑环</text>
+<text x="850" y="1122" font-size="18" class="row">R3 / D9</text>
+<text x="1050" y="1122" font-size="18" >Mic 右轴</text>
+<text x="60" y="1168" font-size="18" class="col">C3 / D3</text>
+<path d="M165 1162 L300 1162" fill="none" stroke="#006f9c" stroke-width="2.5"/>
+<circle cx="300" cy="1162" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/><circle cx="380" cy="1162" r="4" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M302 1160 L373 1147" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<text x="315" y="1141" font-size="15" >SW13</text>
+<path d="M384 1162 L585 1162" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M585 1150 L585 1174 L612 1162 Z" fill="#fff" stroke="#24374b" stroke-width="2"/>
+<path d="M614 1148 L614 1176" fill="none" stroke="#24374b" stroke-width="2.5"/>
+<path d="M614 1162 L830 1162" fill="none" stroke="#994600" stroke-width="2.5"/>
+<text x="580" y="1142" font-size="14" >VD13</text>
+<text x="640" y="1155" font-size="14" class="row">K 黑环</text>
+<text x="850" y="1168" font-size="18" class="row">R3 / D9</text>
+<text x="1050" y="1168" font-size="18" >Send</text>
+<text x="50" y="1221" font-size="18" >选中行输出 LOW，其他行 INPUT 高阻；列 INPUT_PULLUP。禁止把所有行接 GND。</text>
+<rect x="30" y="1260" width="1340" height="135" rx="8" fill="#fff5e8" stroke="#bdcad8"/>
+<text x="50" y="1292" font-size="23" >先做一键：D1 → SW1 → VD1 无环 A → 黑环 K → D6</text>
+<text x="50" y="1325" font-size="19" >断电焊接；主控和底座在 PLA 壳外焊；裸露接头绝缘；二极管避开承托柱与螺丝。</text>
+<text x="50" y="1356" font-size="19" >SW11 / SW12 分开测试；后续功能固件用 OR 合并 Mic，两轴都释放后才结束录音。</text>
+<text x="50" y="1381" font-size="16" >本图不是 3D 飞线示意，也不表示音频、蓝牙、Codex 协议或整机装配已经通过验收。</text>
+</svg>

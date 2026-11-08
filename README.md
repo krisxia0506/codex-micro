@@ -52,6 +52,8 @@
 
 ## 3D 模型工作台
 
+准备先接按键：阅读 [v0.22 按键电路、物料清单与焊接教程](docs/hardware/key-matrix.md)。按现有 XIAO Sense Plus 与 13 轴布局设计，附串口测试程序；先接一键验证，再扩展到完整矩阵。电气与装配尚待实物验收，网页示意线不能直接作为接线图。
+
 支持旋转、爆炸拆解、逐件显隐和 STL 下载。当前按 XIAO nRF52840 Sense Plus、热插拔底座和软线飞线结构展示，不使用整块键盘 PCB。网页和打印文件共用几何源。运行方式和打印边界见[模型工作台说明](docs/model-workbench.md)。
 
 ```bash
@@ -66,7 +68,7 @@ git clone https://github.com/krisxia0506/codex-micro.git
 cd codex-micro
 ```
 
-从产品调研和路线图开始阅读。网页构建见模型工作台说明；硬件烧录与安装步骤将在实现加入后提供。
+从产品调研和路线图开始阅读。网页构建见模型工作台说明；按键原型的串口诊断程序与烧录步骤见[焊接教程](docs/hardware/key-matrix.md)，完整键盘与音频固件尚未实现。
 
 ## 路线图
 
