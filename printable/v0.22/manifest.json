@@ -1,0 +1,425 @@
+{
+  "version": 1,
+  "modelVersion": "0.22",
+  "variant": "A",
+  "keyRecessDepth": 2,
+  "switchFamily": "Deep Sea MINI / Choc V2 reference",
+  "socketModel": "CPG135001S30",
+  "socketDimensions": {
+    "model": "CPG135001S30",
+    "bodyWidth": 9.95,
+    "baseWidth": 9.55,
+    "bodyDepth": 6.85,
+    "bodyHeight": 1.85,
+    "overallWidth": 13.15,
+    "collarHeight": 1.2,
+    "collarDiameter": 2.9,
+    "flangeHeight": 0.25,
+    "pins": [
+      [
+        -5,
+        -3.8
+      ],
+      [
+        0,
+        -6
+      ]
+    ],
+    "clearance": 0.5,
+    "bottomZ": 6.15
+  },
+  "socketSupport": {
+    "offset": [
+      -2.5,
+      -4.9
+    ],
+    "floorZ": 1,
+    "topZ": 6,
+    "gap": 0.15,
+    "topDiameter": 2.8,
+    "footDiameter": 5
+  },
+  "mechanicalStatus": "Reference trial: exact MINI mould drawing unavailable",
+  "units": "mm",
+  "dimensions": {
+    "width": 110,
+    "depth": 120,
+    "wall": 3,
+    "height": 12.5
+  },
+  "status": "Unvalidated physical fit; A has no switch-housing latch",
+  "screws": "4 x M3 x 12",
+  "parts": [
+    {
+      "id": "bottom",
+      "name": "底板 · 13 键位承托柱",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "color": "#c8cbd0",
+      "level": 0,
+      "description": "v0.22 每个键位增加轴座承托柱：相对轴心 (-2.5, -4.9) mm，内底面以上高 5 mm，顶面 Ø2.8、根部 Ø5 mm；距轴座底面 0.15 mm。底板主体 2 mm；边框、四角螺母槽与开发板槽下方局部保留 4 mm 厚度，维持装配高度。",
+      "printable": true
+    },
+    {
+      "id": "wall",
+      "name": "中框 · 螺丝支柱",
+      "position": [
+        0,
+        0,
+        3
+      ],
+      "color": "#e0e2e4",
+      "level": 1,
+      "description": "7 mm 中框，沿用四角 M3 紧固。",
+      "printable": true
+    },
+    {
+      "id": "top",
+      "name": "MINI 下沉 2 mm 上板 · Choc 轴座",
+      "position": [
+        0,
+        0,
+        10
+      ],
+      "color": "#c5cdd0",
+      "level": 2.5,
+      "description": "每个轴位开 15×15 mm 槽，承托面下沉 2 mm；轴体与键帽同步降低，底板承托柱降为 5 mm。中心孔 5.2 mm、底座凸台孔 3.3 mm × 2、辅助脚避空 1.8 mm；板厚 1.5 mm。Choc V2 参考孔位，深海 MINI 待实物试配。底座从下方装入。采用 A 方案，轴壳外露；不提供轴壳卡爪锁止。",
+      "printable": true
+    },
+    {
+      "id": "key-1",
+      "name": "任务键 1",
+      "position": [
+        -10,
+        30,
+        16
+      ],
+      "color": "#a4f1cf",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-2",
+      "name": "任务键 2",
+      "position": [
+        10,
+        30,
+        16
+      ],
+      "color": "#ffe0a0",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-3",
+      "name": "任务键 3",
+      "position": [
+        -30,
+        10,
+        16
+      ],
+      "color": "#a8bfff",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-4",
+      "name": "任务键 4",
+      "position": [
+        -10,
+        10,
+        16
+      ],
+      "color": "#e5eced",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-5",
+      "name": "任务键 5",
+      "position": [
+        10,
+        10,
+        16
+      ],
+      "color": "#b8c6ff",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-6",
+      "name": "任务键 6",
+      "position": [
+        30,
+        10,
+        16
+      ],
+      "color": "#f4adc9",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-7",
+      "name": "快速模式",
+      "position": [
+        -30,
+        -10,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-8",
+      "name": "批准",
+      "position": [
+        -10,
+        -10,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-9",
+      "name": "拒绝",
+      "position": [
+        10,
+        -10,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-10",
+      "name": "分支对话",
+      "position": [
+        30,
+        -10,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "key-11",
+      "name": "语音键",
+      "position": [
+        0,
+        -30,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；2 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        -10,
+        10
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 2
+      }
+    },
+    {
+      "id": "key-12",
+      "name": "发送",
+      "position": [
+        30,
+        -30,
+        16
+      ],
+      "color": "#e9edef",
+      "level": 4,
+      "description": "中空键帽，底部空腔深 3.8 mm；1 个 MX 十字盲孔（跨度 4.15、臂宽 1.45、深 2.80 mm），孔口倒角，安装柱外径 5.20 mm，为参考内径 5.50 mm 的圆形护壁留出间隙。打印试配尺寸，松紧和全行程需实测。",
+      "printable": true,
+      "mountXs": [
+        0
+      ],
+      "keycapValidation": {
+        "components": 1,
+        "guardOverlap": 0,
+        "bottomOutOverlap": 0,
+        "stemOverlap": 0,
+        "engagement": 2.5,
+        "roofThickness": 1.6000000000000005,
+        "mounts": 1
+      }
+    },
+    {
+      "id": "knob",
+      "name": "旋钮",
+      "position": [
+        -30,
+        30,
+        18
+      ],
+      "color": "#bac3c7",
+      "level": 4,
+      "description": "直径 18 mm；实心占位件，未设计编码器轴孔。",
+      "printable": true
+    },
+    {
+      "id": "joystick",
+      "name": "摇杆帽",
+      "position": [
+        30,
+        30,
+        18
+      ],
+      "color": "#25282a",
+      "level": 4,
+      "description": "实心外观占位件，未适配实际摇杆。",
+      "printable": true
+    },
+    {
+      "id": "socket-fit-coupon",
+      "name": "1350 下挂底座试配件",
+      "printable": true
+    }
+  ]
+}
